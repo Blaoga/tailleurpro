@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion | Tailleur Pro</title>
+  <meta name="description" content="Connectez-vous à votre atelier Tailleur Pro avec votre numéro de téléphone et votre mot de passe.">
+  <meta name="theme-color" content="#120B2E">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="index.html" class="auth-brand" aria-label="Retour à l'accueil Tailleur Pro">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--violet-600);" aria-hidden="true">
+          <circle cx="6" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+          <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+          <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+        </svg>
+        <span>Tailleur<span style="color:var(--violet-600)">Pro</span></span>
+      </a>
+      <h1 class="auth-title">Connexion à votre atelier</h1>
+      <p class="auth-subtitle">Accédez à vos commandes et fiches clients</p>
+    </div>
+
+    <!-- Zone d'alerte pour les messages d'erreur -->
+    <div id="authAlert" class="auth-alert-message" role="alert" aria-live="polite"></div>
+
+    <form id="connexionForm" novalidate>
+      <!-- 1. Choix du Pays -->
+      <div class="form-group">
+        <label for="paysSelect" class="form-label">Pays</label>
+        <select id="paysSelect" class="form-select" aria-label="Sélectionnez votre pays">
+          <!-- Rempli dynamiquement depuis pays.js -->
+        </select>
+      </div>
+
+      <!-- 2. Numéro de téléphone -->
+      <div class="form-group">
+        <label for="telephoneInput" class="form-label">Numéro de téléphone</label>
+        <div class="phone-input-group">
+          <div class="phone-country-prefix" id="countryPrefixDisplay" aria-hidden="true">
+            <span class="flag">🇨🇲</span>
+            <span class="code">+237</span>
+          </div>
+          <input type="tel" id="telephoneInput" class="phone-national-input" placeholder="6 70 12 34 56" inputmode="numeric" required autocomplete="tel-national">
+        </div>
+      </div>
+
+      <!-- 3. Mot de passe -->
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <label for="passwordInput" class="form-label" style="margin-bottom:0;">Mot de passe</label>
+          <a href="mot-de-passe.html" style="font-size: 0.8rem; color: var(--violet-600); font-weight: 600;">Mot de passe oublié ?</a>
+        </div>
+        <div class="password-wrapper">
+          <input type="password" id="passwordInput" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+          <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Afficher le mot de passe">Afficher</button>
+        </div>
+      </div>
+
+      <!-- Bouton d'action -->
+      <button type="submit" class="btn btn-primary" id="submitBtn" style="width: 100%; margin-top: var(--space-3);">
+        <span id="btnText">Se connecter</span>
+      </button>
+    </form>
+
+    <div class="auth-footer-links">
+      <div>Pas encore de compte ? <a href="inscription.html">Créer un compte (15 jours offerts)</a></div>
+      <div><a href="index.html">← Retour à l'accueil</a></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/pays.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Rediriger si déjà connecté
+      await Auth.redirigerSiConnecte();
+
+      const form = document.getElementById('connexionForm');
+      const paysSelect = document.getElementById('paysSelect');
+      const prefixDisplay = document.getElementById('countryPrefixDisplay');
+      const telInput = document.getElementById('telephoneInput');
+      const pwdInput = document.getElementById('passwordInput');
+      const togglePwd = document.getElementById('togglePasswordBtn');
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const alertBox = document.getElementById('authAlert');
+
+      // 2. Remplir pays
+      paysSelect.innerHTML = Object.values(PAYS).map(p => 
+        `<option value="${p.code}">${p.drapeau} ${p.nom} (+${p.indicatif})</option>`
+      ).join('');
+
+      const paysActif = obtenirPaysActif();
+      paysSelect.value = paysActif.code;
+
+      function actualiserAffichagePays() {
+        const p = PAYS[paysSelect.value] || PAYS_PAR_DEFAUT;
+        prefixDisplay.innerHTML = `<span class="flag">${p.drapeau}</span><span class="code">+${p.indicatif}</span>`;
+        telInput.placeholder = p.exemple;
+      }
+
+      paysSelect.addEventListener('change', actualiserAffichagePays);
+      actualiserAffichagePays();
+
+      // 3. Toggle mot de passe
+      togglePwd.addEventListener('click', () => {
+        const estMasque = pwdInput.type === 'password';
+        pwdInput.type = estMasque ? 'text' : 'password';
+        togglePwd.textContent = estMasque ? 'Masquer' : 'Afficher';
+        togglePwd.setAttribute('aria-label', estMasque ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+      });
+
+      function afficherErreur(message) {
+        alertBox.textContent = message;
+        alertBox.className = 'auth-alert-message error';
+      }
+
+      function masquerErreur() {
+        alertBox.textContent = '';
+        alertBox.className = 'auth-alert-message';
+      }
+
+      // 4. Soumission du formulaire
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        masquerErreur();
+
+        const codePays = paysSelect.value;
+        const telephoneSaisi = telInput.value.trim();
+        const motDePasse = pwdInput.value;
+
+        const norm = normaliserTelephone(telephoneSaisi, codePays);
+        if (!norm.valide) {
+          afficherErreur(norm.erreur);
+          telInput.focus();
+          return;
+        }
+
+        if (!motDePasse) {
+          afficherErreur("Veuillez saisir votre mot de passe.");
+          pwdInput.focus();
+          return;
+        }
+
+        submitBtn.disabled = true;
+        btnText.textContent = "Connexion en cours...";
+
+        try {
+          await Auth.connecter({
+            codePays,
+            telephoneSaisi,
+            motDePasse
+          });
+
+          // Succès : redirection vers app.html
+          window.location.replace('app.html');
+        } catch (err) {
+          afficherErreur(err.message || "Erreur de connexion.");
+          submitBtn.disabled = false;
+          btnText.textContent = "Se connecter";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

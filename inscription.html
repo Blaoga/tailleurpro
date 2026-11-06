@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créer un compte | Tailleur Pro</title>
+  <meta name="description" content="Inscrivez-vous en 1 minute avec votre numéro de téléphone. 15 jours gratuits sans carte bancaire.">
+  <meta name="theme-color" content="#120B2E">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="index.html" class="auth-brand" aria-label="Retour à l'accueil Tailleur Pro">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--violet-600);" aria-hidden="true">
+          <circle cx="6" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+          <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+          <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+        </svg>
+        <span>Tailleur<span style="color:var(--violet-600)">Pro</span></span>
+      </a>
+      <h1 class="auth-title">Créer mon compte</h1>
+      <p class="auth-subtitle">15 jours d'essai gratuit · Sans carte bancaire</p>
+    </div>
+
+    <!-- Zone d'alerte pour les messages d'erreur -->
+    <div id="authAlert" class="auth-alert-message" role="alert" aria-live="polite"></div>
+
+    <form id="inscriptionForm" novalidate>
+      <!-- 1. Prénom ou Atelier -->
+      <div class="form-group">
+        <label for="prenomInput" class="form-label">Votre Prénom ou Nom d'atelier</label>
+        <input type="text" id="prenomInput" class="form-input" placeholder="Ex: Ousmane ou Atelier Élégance" required autocomplete="name">
+      </div>
+
+      <!-- 2. Choix du Pays (CM, CI, CG) -->
+      <div class="form-group">
+        <label for="paysSelect" class="form-label">Pays</label>
+        <select id="paysSelect" class="form-select" aria-label="Sélectionnez votre pays">
+          <!-- Rempli dynamiquement depuis pays.js -->
+        </select>
+      </div>
+
+      <!-- 3. Numéro de téléphone -->
+      <div class="form-group">
+        <label for="telephoneInput" class="form-label">Numéro de téléphone</label>
+        <div class="phone-input-group">
+          <div class="phone-country-prefix" id="countryPrefixDisplay" aria-hidden="true">
+            <span class="flag">🇨🇲</span>
+            <span class="code">+237</span>
+          </div>
+          <input type="tel" id="telephoneInput" class="phone-national-input" placeholder="6 70 12 34 56" inputmode="numeric" required autocomplete="tel-national">
+        </div>
+        <small id="phoneFormatHelp" style="font-size: 0.78rem; color: var(--texte-doux); margin-top: 4px; display: block;"></small>
+      </div>
+
+      <!-- 4. Mot de passe -->
+      <div class="form-group">
+        <label for="passwordInput" class="form-label">Mot de passe (8 caractères minimum)</label>
+        <div class="password-wrapper">
+          <input type="password" id="passwordInput" class="form-input" placeholder="••••••••" required minlength="8" autocomplete="new-password">
+          <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Afficher le mot de passe">Afficher</button>
+        </div>
+        <!-- Barre de force du mot de passe -->
+        <div class="password-strength-bar" aria-hidden="true">
+          <div class="password-strength-fill" id="strengthFill"></div>
+        </div>
+        <div id="strengthLabel" style="font-size: 0.75rem; color: var(--texte-doux); margin-top: 3px;"></div>
+      </div>
+
+      <!-- 5. Confirmation Mot de passe -->
+      <div class="form-group">
+        <label for="passwordConfirmInput" class="form-label">Confirmer le mot de passe</label>
+        <input type="password" id="passwordConfirmInput" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+      </div>
+
+      <!-- Case Conditions d'utilisation -->
+      <label class="auth-checkbox-label">
+        <input type="checkbox" id="cguCheckbox" required>
+        <span>J'accepte les <a href="conditions.html" target="_blank">conditions d'utilisation</a> et la <a href="confidentialite.html" target="_blank">politique de confidentialité</a>.</span>
+      </label>
+
+      <!-- Bouton d'action -->
+      <button type="submit" class="btn btn-primary" id="submitBtn" style="width: 100%;">
+        <span id="btnText">Créer mon compte et commencer l'essai</span>
+      </button>
+    </form>
+
+    <div class="auth-footer-links">
+      <div>Vous avez déjà un compte ? <a href="connexion.html">Connexion</a></div>
+      <div><a href="index.html">← Retour à l'accueil</a></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/pays.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Rediriger si une session existe déjà (Section 7.7)
+      await Auth.redirigerSiConnecte();
+
+      // 2. Initialisation des éléments
+      const form = document.getElementById('inscriptionForm');
+      const prenomInput = document.getElementById('prenomInput');
+      const paysSelect = document.getElementById('paysSelect');
+      const prefixDisplay = document.getElementById('countryPrefixDisplay');
+      const telInput = document.getElementById('telephoneInput');
+      const phoneHelp = document.getElementById('phoneFormatHelp');
+      const pwdInput = document.getElementById('passwordInput');
+      const pwdConfirmInput = document.getElementById('passwordConfirmInput');
+      const togglePwd = document.getElementById('togglePasswordBtn');
+      const strengthFill = document.getElementById('strengthFill');
+      const strengthLabel = document.getElementById('strengthLabel');
+      const cguCheckbox = document.getElementById('cguCheckbox');
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const alertBox = document.getElementById('authAlert');
+
+      // 3. Remplir le sélecteur de pays et restaurer le dernier pays utilisé
+      paysSelect.innerHTML = Object.values(PAYS).map(p => 
+        `<option value="${p.code}">${p.drapeau} ${p.nom} (+${p.indicatif})</option>`
+      ).join('');
+
+      const paysActif = obtenirPaysActif();
+      paysSelect.value = paysActif.code;
+
+      function actualiserAffichagePays() {
+        const p = PAYS[paysSelect.value] || PAYS_PAR_DEFAUT;
+        prefixDisplay.innerHTML = `<span class="flag">${p.drapeau}</span><span class="code">+${p.indicatif}</span>`;
+        telInput.placeholder = p.exemple;
+        phoneHelp.textContent = `${p.longueur} chiffres attendus. Ex: ${p.exemple}`;
+      }
+
+      paysSelect.addEventListener('change', actualiserAffichagePays);
+      actualiserAffichagePays();
+
+      // 4. Toggle affichage mot de passe
+      togglePwd.addEventListener('click', () => {
+        const estMasque = pwdInput.type === 'password';
+        pwdInput.type = estMasque ? 'text' : 'password';
+        pwdConfirmInput.type = estMasque ? 'text' : 'password';
+        togglePwd.textContent = estMasque ? 'Masquer' : 'Afficher';
+        togglePwd.setAttribute('aria-label', estMasque ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+      });
+
+      // 5. Indicateur de force en temps réel
+      pwdInput.addEventListener('input', () => {
+        const res = evaluerForceMotDePasse(pwdInput.value);
+        strengthFill.style.width = `${res.score}%`;
+        strengthFill.style.backgroundColor = res.couleur;
+        strengthLabel.textContent = res.score > 0 ? `Force : ${res.niveau}` : '';
+        strengthLabel.style.color = res.couleur;
+      });
+
+      // 6. Gestionnaire de soumission
+      function afficherErreur(message) {
+        alertBox.textContent = message;
+        alertBox.className = 'auth-alert-message error';
+        alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function masquerErreur() {
+        alertBox.textContent = '';
+        alertBox.className = 'auth-alert-message';
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        masquerErreur();
+
+        const prenom = prenomInput.value.trim();
+        const codePays = paysSelect.value;
+        const telephoneSaisi = telInput.value.trim();
+        const motDePasse = pwdInput.value;
+        const confirmMdp = pwdConfirmInput.value;
+
+        if (!prenom) {
+          afficherErreur("Veuillez saisir votre prénom ou nom d'atelier.");
+          prenomInput.focus();
+          return;
+        }
+
+        const norm = normaliserTelephone(telephoneSaisi, codePays);
+        if (!norm.valide) {
+          afficherErreur(norm.erreur);
+          telInput.focus();
+          return;
+        }
+
+        if (motDePasse.length < 8) {
+          afficherErreur("Le mot de passe doit comporter au moins 8 caractères.");
+          pwdInput.focus();
+          return;
+        }
+
+        if (motDePasse !== confirmMdp) {
+          afficherErreur("Les deux mots de passe ne correspondent pas.");
+          pwdConfirmInput.focus();
+          return;
+        }
+
+        if (!cguCheckbox.checked) {
+          afficherErreur("Veuillez accepter les conditions d'utilisation pour continuer.");
+          return;
+        }
+
+        // Début du chargement
+        submitBtn.disabled = true;
+        btnText.textContent = "Création de votre atelier...";
+
+        try {
+          await Auth.inscrire({
+            prenom,
+            codePays,
+            telephoneSaisi,
+            motDePasse
+          });
+
+          // Succès : redirection vers app.html
+          window.location.replace('app.html');
+        } catch (err) {
+          afficherErreur(err.message || "Une erreur est survenue lors de l'inscription.");
+          submitBtn.disabled = false;
+          btnText.textContent = "Créer mon compte et commencer l'essai";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
