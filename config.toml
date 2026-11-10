@@ -1,0 +1,25 @@
+# ============================================================================
+# TAILLEUR PRO — CONFIGURATION SUPABASE EDGE FUNCTIONS
+# ============================================================================
+# Référence : https://supabase.com/docs/guides/functions/configuration
+# ============================================================================
+
+# Webhook SasPay :
+# Appel entrant direct depuis les serveurs SasPay (pas de jeton JWT utilisateur).
+# La sécurité est assurée à 100% au niveau applicatif par :
+# - Vérification cryptographique HMAC SHA-256 de la signature (X-Webhook-Signature)
+# - Horodatage anti-rejeu tolérance 300s (X-Webhook-Timestamp)
+# - Déduplication par empreinte unique dans la table saspay_webhook_events
+# - Vérification active auprès de l'API SasPay (GET /payments/{id}/verify/) avant tout traitement
+[functions.saspay-webhook]
+verify_jwt = false
+
+# Initialisation d'un paiement SasPay :
+# Exige impérativement un utilisateur authentifié Tailleur Pro (JWT actif).
+[functions.saspay-initiate]
+verify_jwt = true
+
+# Vérification active d'un paiement ou session :
+# Exige impérativement un utilisateur authentifié Tailleur Pro (JWT actif).
+[functions.saspay-verify]
+verify_jwt = true

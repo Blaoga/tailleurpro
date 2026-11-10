@@ -1,0 +1,2335 @@
+/**
+ * TAILLEUR PRO - DASHBOARD LUXE & MODERNE
+ * =======================================
+ * Design sombre violet immersif (inspiré des captures de référence)
+ * avec bascule automatique vers le thème clair lavande pour le plein soleil.
+ * Cartes en verre (glassmorphism), halos lumineux, boutons néon, navigation flottante.
+ */
+
+/* ==========================================================================
+   1. THÈME SOMBRE VIOLET (PAR DÉFAUT - STYLE CAPTURES)
+   ========================================================================== */
+body.app-body {
+  background-color: #0D0722;
+  background-image: radial-gradient(circle at 50% 0%, #251252 0%, #120A2F 45%, #0B051B 100%);
+  color: #FFFFFF;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  font-family: var(--font-famille);
+  overflow-x: clip;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Halos lumineux d'ambiance en arrière-plan */
+.app-bg-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+
+.app-bg-glow-1 {
+  width: 350px;
+  height: 350px;
+  background: #7C3AED;
+  top: -80px;
+  right: -100px;
+}
+
+.app-bg-glow-2 {
+  width: 300px;
+  height: 300px;
+  background: #A855F7;
+  bottom: 120px;
+  left: -80px;
+}
+
+/* ==========================================================================
+   MODE CLAIR PLEIN SOLEIL (HAUTE LISIBILITÉ & FORT CONTRASTE EN PLEIN JOUR)
+   ========================================================================== */
+body.theme-light {
+  background-color: #F8F7FC;
+  background-image: none;
+  color: #1B1533;
+}
+
+body.theme-light .app-bg-glow {
+  display: none;
+}
+
+/* En-tête */
+body.theme-light .app-header {
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.12);
+  box-shadow: 0 4px 18px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .greeting-name {
+  color: #1B1533;
+}
+
+body.theme-light .greeting-atelier {
+  color: #6B6585;
+}
+
+body.theme-light .header-icon-pill {
+  background: #F3EFFF;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  color: #6D28D9;
+}
+
+body.theme-light .header-icon-pill:hover {
+  background: #EDE9FE;
+  border-color: #7C3AED;
+}
+
+/* Titres de page & sous-titres */
+body.theme-light h2,
+body.theme-light h3 {
+  color: #1B1533 !important;
+}
+
+body.theme-light .app-tab-section h2,
+body.theme-light .app-tab-section h3 {
+  color: #1B1533 !important;
+}
+
+body.theme-light [style*="letter-spacing: 0.05em"] {
+  color: #6D28D9 !important;
+}
+
+body.theme-light [style*="color: var(--violet-300)"],
+body.theme-light [style*="color:var(--violet-300)"],
+body.theme-light [style*="color: var(--texte-blanc-doux)"],
+body.theme-light [style*="color:var(--texte-blanc-doux)"] {
+  color: #5B4E7E !important;
+}
+
+body.theme-light [style*="color: #FFF"],
+body.theme-light [style*="color:#FFF"] {
+  color: #1B1533 !important;
+}
+
+/* Boutons en mode clair */
+body.theme-light .btn-primary,
+body.theme-light .btn-primary *,
+body.theme-light .btn-whatsapp-nudge,
+body.theme-light .btn-whatsapp-nudge * {
+  color: #FFFFFF !important;
+}
+
+body.theme-light .btn-secondary {
+  background: #F3EFFF;
+  color: #6D28D9 !important;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+body.theme-light .btn-secondary:hover {
+  background: #EDE9FE;
+  border-color: #7C3AED;
+}
+
+body.theme-light .btn-outline-violet {
+  border-color: rgba(124, 58, 237, 0.3);
+  color: #6D28D9 !important;
+}
+
+/* Bandeau Essai Gratuit */
+body.theme-light .trial-pill-card {
+  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+  border: none;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.22);
+}
+
+body.theme-light .trial-pill-card * {
+  color: #FFFFFF !important;
+}
+
+body.theme-light .trial-cta-btn {
+  background: #FFFFFF !important;
+  color: #6D28D9 !important;
+}
+
+body.theme-light .trial-pill-card.expired {
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+}
+
+body.theme-light .trial-pill-card.pro-active {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+body.theme-light #modalEssaiExpire .app-modal-card {
+  background: #FFFFFF;
+}
+
+body.theme-light #modalEssaiExpire .app-modal-title {
+  color: #1B1533 !important;
+}
+
+body.theme-light #modalEssaiExpire p {
+  color: #4B4660 !important;
+}
+
+/* Cartes Statistiques 2x2 */
+body.theme-light .stat-card-widget {
+  background: #FFFFFF;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  box-shadow: 0 6px 20px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .stat-widget-title {
+  color: #4C3F6E !important;
+  font-weight: 700 !important;
+}
+
+body.theme-light .stat-widget-number {
+  color: #1B1533 !important;
+}
+
+body.theme-light .stat-corner-chip {
+  background: #F3EFFF;
+  color: #6D28D9;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  font-weight: 700;
+}
+
+body.theme-light .stat-corner-chip:hover {
+  background: #EDE9FE;
+  border-color: #7C3AED;
+}
+
+body.theme-light .stat-icon-wrapper {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.22);
+  color: #7C3AED;
+}
+
+body.theme-light .stat-icon-wrapper.gold {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #D97706;
+}
+
+body.theme-light .stat-icon-wrapper.green {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #16A34A;
+}
+
+/* Actions rapides */
+body.theme-light .quick-pill-card {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(124, 58, 237, 0.18);
+  box-shadow: 0 4px 14px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .quick-pill-card span {
+  color: #1B1533 !important;
+  font-weight: 700;
+}
+
+body.theme-light .quick-pill-card svg {
+  color: #7C3AED;
+}
+
+body.theme-light .quick-pill-card:hover {
+  background: #F8F5FF;
+  border-color: #7C3AED;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.15);
+}
+
+/* Pastilles de filtres */
+body.theme-light .filter-pill {
+  background: #FFFFFF;
+  color: #6B6585;
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+body.theme-light .filter-pill:hover {
+  background: #F3EFFF;
+  color: #6D28D9;
+  border-color: #7C3AED;
+}
+
+body.theme-light .filter-pill.active {
+  background: #7C3AED;
+  color: #FFFFFF !important;
+  border-color: #7C3AED;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+}
+
+/* Cartes de Commandes */
+body.theme-light .order-card-item {
+  background: #FFFFFF;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  box-shadow: 0 6px 20px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .order-card-client-name {
+  color: #1B1533 !important;
+}
+
+body.theme-light .order-card-garment {
+  color: #5B4E7E;
+}
+
+body.theme-light .payment-progress-track {
+  background: #EDE9FE;
+}
+
+body.theme-light .payment-progress-labels span {
+  color: #6B6585;
+}
+
+body.theme-light .payment-progress-labels strong {
+  color: #1B1533;
+}
+
+/* Cartes de Clients */
+body.theme-light .client-card-item {
+  background: #FFFFFF;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  box-shadow: 0 6px 18px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .client-name-text {
+  color: #1B1533 !important;
+}
+
+body.theme-light .client-sub-phone {
+  color: #6B6585;
+}
+
+/* Fiche Client - Historique des commandes en mode clair */
+body.theme-light .client-mini-recap-grid {
+  background: #F3F0FC;
+  border-color: rgba(124, 58, 237, 0.15);
+}
+
+body.theme-light .client-mini-recap-label {
+  color: #6B6585;
+}
+
+body.theme-light .client-mini-recap-val {
+  color: #1B1533;
+}
+
+body.theme-light .client-mini-recap-val.debt {
+  color: #DC2626;
+}
+
+body.theme-light .client-mini-recap-val.ok {
+  color: #059669;
+}
+
+body.theme-light .client-history-group-header {
+  color: #6D28D9;
+}
+
+body.theme-light .client-order-history-card {
+  background: #F8F7FC;
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  color: #1B1533;
+  box-shadow: 0 2px 8px rgba(76, 29, 149, 0.04);
+}
+
+body.theme-light .client-order-history-card:hover {
+  background: #F1EDFD;
+  border-color: rgba(124, 58, 237, 0.35);
+}
+
+body.theme-light .client-order-history-card.is-active {
+  border-left: 4px solid #7C3AED;
+}
+
+body.theme-light .client-order-history-card.is-retard {
+  border-left: 4px solid #DC2626;
+}
+
+body.theme-light .client-order-history-card.is-livree {
+  border-left: 4px solid #059669;
+}
+
+body.theme-light .order-card-garment-title {
+  color: #1B1533;
+}
+
+body.theme-light .order-card-fabric-tag {
+  background: rgba(124, 58, 237, 0.08);
+  color: #4C1D95;
+}
+
+body.theme-light .order-card-dates-meta {
+  color: #6B6585;
+}
+
+body.theme-light .order-card-dates-meta strong {
+  color: #1B1533;
+}
+
+body.theme-light .unpaid-alert-chip {
+  background: #FEE2E2;
+  color: #B91C1C;
+  border-color: #FCA5A5;
+}
+
+body.theme-light .paid-success-chip {
+  background: #D1FAE5;
+  color: #047857;
+  border-color: #6EE7B7;
+}
+
+body.theme-light .view-detail-hint {
+  color: #7C3AED;
+}
+
+/* Cartes de Dépenses */
+body.theme-light .expense-card-item {
+  background: #FFFFFF;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  box-shadow: 0 6px 18px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .expense-category-title {
+  color: #1B1533 !important;
+}
+
+body.theme-light .expense-note {
+  color: #5B4E7E;
+}
+
+body.theme-light .expense-date {
+  color: #8F87A7;
+}
+
+/* Graphique hebdomadaire */
+body.theme-light .chart-card-box {
+  background: #FFFFFF;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  box-shadow: 0 6px 20px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .chart-bar-stick {
+  background: #EDE9FE;
+}
+
+body.theme-light .chart-bar-stick:hover {
+  background: #7C3AED;
+}
+
+body.theme-light .chart-bar-label {
+  color: #6B6585;
+}
+
+/* Boîtes de Réglages */
+body.theme-light .settings-box {
+  background: #FFFFFF;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  box-shadow: 0 6px 18px rgba(76, 29, 149, 0.05);
+}
+
+body.theme-light .settings-box h3 {
+  color: #1B1533 !important;
+}
+
+body.theme-light .settings-box p {
+  color: #6B6585 !important;
+}
+
+/* Recherche */
+body.theme-light .search-box-wrapper {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(124, 58, 237, 0.18);
+  box-shadow: 0 2px 10px rgba(76, 29, 149, 0.04);
+}
+
+body.theme-light .search-box-input {
+  color: #1B1533;
+}
+
+body.theme-light .search-box-input::placeholder {
+  color: #9A8EB8;
+}
+
+/* Barre de navigation basse flottante */
+body.theme-light .bottom-nav-container {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(124, 58, 237, 0.2);
+  box-shadow: 0 12px 36px rgba(46, 26, 107, 0.14), 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+body.theme-light .nav-tab-item {
+  color: #6B6585;
+}
+
+body.theme-light .nav-tab-item svg {
+  color: #6B6585;
+}
+
+body.theme-light .nav-tab-item:hover {
+  color: #7C3AED;
+}
+
+body.theme-light .nav-tab-item.active {
+  background: #7C3AED;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+body.theme-light .nav-tab-item.active svg {
+  color: #FFFFFF !important;
+}
+
+body.theme-light .nav-tab-item.active span {
+  color: #FFFFFF !important;
+}
+
+/* Modales & Fenêtres contextuelles */
+body.theme-light .app-modal-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  color: #1B1533;
+  box-shadow: 0 20px 60px rgba(46, 26, 107, 0.22);
+}
+
+body.theme-light .app-modal-title {
+  color: #1B1533;
+}
+
+body.theme-light .app-modal-close-btn {
+  background: #F3EFFF;
+  color: #6D28D9;
+}
+
+body.theme-light .form-label {
+  color: #382D5C !important;
+  font-weight: 700;
+}
+
+body.theme-light .form-input,
+body.theme-light .form-select,
+body.theme-light textarea.form-input {
+  background: #F8F6FE !important;
+  color: #1B1533 !important;
+  border: 1.5px solid rgba(124, 58, 237, 0.22) !important;
+}
+
+body.theme-light .form-input:focus,
+body.theme-light .form-select:focus {
+  background: #FFFFFF !important;
+  border-color: #7C3AED !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15) !important;
+}
+
+body.theme-light .form-input::placeholder {
+  color: #9A8EB8 !important;
+}
+
+body.theme-light .measurement-pill-box {
+  background: #F8F6FE;
+  border-color: rgba(124, 58, 237, 0.18);
+}
+
+body.theme-light .measurement-pill-box .label {
+  color: #6B6585;
+}
+
+body.theme-light .measurement-pill-box .val {
+  color: #1B1533;
+}
+
+/* Action Sheet */
+body.theme-light .action-sheet-drawer {
+  background: #FFFFFF;
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+body.theme-light .action-sheet-title {
+  color: #1B1533 !important;
+}
+
+body.theme-light .sheet-action-item {
+  color: #1B1533;
+}
+
+body.theme-light .sheet-action-icon-box {
+  background: #F3EFFF;
+  border-color: rgba(124, 58, 237, 0.2);
+  color: #7C3AED;
+}
+
+/* ==========================================================================
+   2. EN-TÊTE FIXE DU DASHBOARD
+   ========================================================================== */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 8, 36, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+}
+
+.app-header-container {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-hex {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--degrade-bouton);
+  color: #FFF;
+  font-weight: 800;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+  position: relative;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.online-pulse-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: var(--succes);
+  border-radius: 50%;
+  border: 2px solid #0D0722;
+  box-shadow: 0 0 8px var(--succes);
+}
+
+.user-greeting {
+  display: flex;
+  flex-direction: column;
+}
+
+.greeting-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.greeting-atelier {
+  font-size: 0.78rem;
+  color: var(--violet-300);
+  font-weight: 500;
+}
+
+.header-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-icon-pill {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #E9D5FF;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-rapide);
+}
+
+.header-icon-pill:hover {
+  background: rgba(167, 139, 250, 0.25);
+  color: #FFF;
+  transform: translateY(-1px);
+}
+
+.bell-badge-count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: var(--danger);
+  border-radius: 50%;
+  border: 1.5px solid #0D0722;
+  box-shadow: 0 0 6px var(--danger);
+}
+
+/* ==========================================================================
+   3. CADRE PRINCIPAL (COLONNE 480PX)
+   ========================================================================== */
+.app-viewport {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  /* Espacement de sécurité pour éviter le chevauchement avec la barre flottante basse */
+  padding-bottom: calc(105px + env(safe-area-inset-bottom, 0px));
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sections des onglets */
+.app-tab-section {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.app-tab-section.active {
+  display: flex;
+  animation: tabSmoothAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tabSmoothAppear {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   4. CAPSULE ESSAI GRATUIT RESTANT & ALERTES
+   ========================================================================== */
+.trial-pill-card {
+  background: linear-gradient(135deg, rgba(62, 32, 143, 0.75) 0%, rgba(30, 16, 73, 0.85) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 20px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(124, 58, 237, 0.25);
+}
+
+.trial-pill-card.warning {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.8) 0%, rgba(120, 53, 15, 0.9) 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.trial-pill-card.expired {
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.85) 0%, rgba(127, 29, 29, 0.92) 100%);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.trial-pill-card.pro-active {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(4, 120, 87, 0.92) 100%);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.trial-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trial-main-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trial-sub-text {
+  font-size: 0.72rem;
+  color: var(--texte-blanc-doux);
+}
+
+.trial-cta-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #FFF;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-pilule);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all var(--transition-rapide);
+}
+
+.trial-cta-btn:hover {
+  background: #FFF;
+  color: var(--violet-950);
+}
+
+/* Notification discrète d'inscription réussie sur le Dashboard */
+.welcome-toast-card {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(16, 185, 129, 0.08) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.2);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.welcome-toast-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.welcome-toast-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.welcome-toast-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #4ADE80;
+}
+
+.welcome-toast-sub {
+  font-size: 0.78rem;
+  color: var(--texte-blanc-doux);
+  line-height: 1.4;
+}
+
+.welcome-toast-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: #FFF;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-rapide);
+}
+
+.welcome-toast-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Bandeau d'alerte livraisons */
+.alert-glow-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+
+.alert-glow-card:hover {
+  transform: translateY(-2px);
+}
+
+.alert-glow-card.danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #FCA5A5;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+}
+
+.alert-glow-card.warning {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #FDE68A;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+}
+
+/* ==========================================================================
+   5. GRILLE DE STATS 2X2 GLASSMORPHISM (STYLE CAPTURE OFFICIELLE)
+   ========================================================================== */
+.stats-grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-card-widget {
+  background: rgba(30, 17, 71, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 22px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 124px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: transform var(--transition-douce), border-color var(--transition-douce), box-shadow var(--transition-douce);
+}
+
+.stat-card-widget:hover {
+  transform: translateY(-3px);
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 16px rgba(124, 58, 237, 0.3);
+}
+
+.stat-icon-wrapper {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(124, 58, 237, 0.25);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C084FC;
+  margin-bottom: 8px;
+}
+
+.stat-icon-wrapper.gold {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #FBBF24;
+}
+
+.stat-icon-wrapper.green {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #4ADE80;
+}
+
+.stat-widget-title {
+  font-size: 0.72rem;
+  color: var(--texte-blanc-doux);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.stat-widget-number {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.15;
+  margin: 3px 0 6px 0;
+}
+
+.stat-corner-chip {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--violet-300);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-rapide);
+}
+
+.stat-corner-chip:hover {
+  background: rgba(124, 58, 237, 0.3);
+  color: #FFF;
+}
+
+.section-title-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--violet-300);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+
+body.theme-light .section-title-label {
+  color: #4C3F6E !important;
+}
+
+.section-link-action {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--violet-400);
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+body.theme-light .section-link-action {
+  color: #7C3AED !important;
+}
+
+/* ==========================================================================
+   6. ACTIONS RAPIDES (GRILLE HARMONIEUSE 100% VISIBLE SUR MOBILE SANS COUPURE)
+   ========================================================================== */
+.quick-actions-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.quick-pill-card {
+  width: 100%;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 6px;
+  background: rgba(30, 17, 71, 0.65);
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: var(--radius-pilule);
+  font-size: clamp(0.72rem, 2.6vw, 0.85rem);
+  font-weight: 700;
+  color: #FFF;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all var(--transition-douce);
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.quick-pill-card:hover {
+  background: rgba(62, 35, 143, 0.8);
+  border-color: var(--violet-400);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
+}
+
+.quick-pill-card:active {
+  transform: scale(0.97);
+}
+
+.quick-pill-card svg {
+  flex-shrink: 0;
+  color: #C084FC;
+  width: 16px;
+  height: 16px;
+}
+
+.quick-pill-card span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   7. PASTILLES DE FILTRES HORIZONTALES (STYLE CAPTURE)
+   ========================================================================== */
+.filter-pills-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 0 8px 0;
+}
+
+.filter-pills-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-pill {
+  flex: 0 0 auto;
+  padding: 7px 16px;
+  border-radius: var(--radius-pilule);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  color: var(--texte-blanc-doux);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-douce);
+}
+
+.filter-pill.active {
+  background: var(--degrade-bouton);
+  color: #FFF;
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.5);
+}
+
+/* Champ de recherche avec icône */
+.search-glow-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-glow-wrapper input {
+  padding-left: 42px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-pilule);
+  color: #FFF;
+}
+
+.search-glow-wrapper input:focus {
+  background: rgba(30, 17, 71, 0.8);
+  border-color: var(--violet-400);
+  box-shadow: 0 0 16px rgba(124, 58, 237, 0.35);
+}
+
+.search-glow-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--violet-300);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   8. CARTES DE COMMANDES (AVEC BARRE NÉON PROGRESSIVE)
+   ========================================================================== */
+.orders-list, .clients-list, .debts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card-item {
+  background: rgba(30, 17, 71, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  border-radius: 20px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: all var(--transition-douce);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.order-card-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.45);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4), 0 0 16px rgba(124, 58, 237, 0.25);
+}
+
+.order-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.order-card-client-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.order-card-garment {
+  font-size: 0.82rem;
+  color: var(--violet-300);
+}
+
+/* Compte à rebours coloré */
+.countdown-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-pilule);
+  white-space: nowrap;
+}
+
+.countdown-badge.green {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ADE80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.countdown-badge.orange {
+  background: rgba(245, 158, 11, 0.2);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.countdown-badge.red {
+  background: rgba(239, 68, 68, 0.25);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+/* Barre de progression bicolore néon */
+.payment-progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.payment-progress-track {
+  height: 7px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.payment-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7C3AED 0%, #A855F7 60%, #E879F9 100%);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.payment-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--texte-blanc-doux);
+}
+
+/* Pastilles de statut de confection */
+.status-pill-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 8px;
+  text-transform: capitalize;
+}
+
+.status-pill-badge.recue { background: rgba(148, 163, 184, 0.2); color: #CBD5E1; }
+.status-pill-badge.coupee { background: rgba(59, 130, 246, 0.2); color: #93C5FD; }
+.status-pill-badge.en_couture { background: rgba(245, 158, 11, 0.2); color: #FCD34D; }
+.status-pill-badge.prete { background: rgba(34, 197, 94, 0.2); color: #86EFAC; }
+.status-pill-badge.livree { background: rgba(168, 85, 247, 0.2); color: #E9D5FF; }
+
+/* ==========================================================================
+   9. CARTES DE CLIENTS & FICHES MESURES
+   ========================================================================== */
+.client-card-item {
+  background: rgba(30, 17, 71, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  border-radius: 20px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all var(--transition-douce);
+}
+
+.client-card-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.client-avatar-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.client-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--degrade-bouton);
+  color: #FFF;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+}
+
+.client-info-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.client-name-text {
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: #FFFFFF;
+}
+
+.client-phone-text {
+  font-size: 0.78rem;
+  color: var(--violet-300);
+}
+
+.debt-pill-badge {
+  background: rgba(239, 68, 68, 0.2);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-pilule);
+}
+
+/* --- Historique des Commandes dans la Fiche Client --- */
+.client-mini-recap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: 14px;
+}
+
+.client-mini-recap-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+}
+
+.client-mini-recap-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--texte-doux);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.client-mini-recap-val {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.client-mini-recap-val.debt {
+  color: #F87171;
+}
+
+.client-mini-recap-val.ok {
+  color: #34D399;
+}
+
+.client-history-group-header {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--violet-300);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.client-order-history-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  text-decoration: none;
+  color: inherit;
+  box-sizing: border-box;
+}
+
+.client-order-history-card:hover {
+  background: rgba(167, 139, 250, 0.08);
+  border-color: rgba(167, 139, 250, 0.45);
+  transform: translateY(-1px);
+}
+
+.client-order-history-card.is-active {
+  border-left: 4px solid #8B5CF6;
+}
+
+.client-order-history-card.is-retard {
+  border-left: 4px solid #EF4444;
+}
+
+.client-order-history-card.is-livree {
+  border-left: 4px solid #10B981;
+  opacity: 0.92;
+}
+
+.order-card-garment-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-card-fabric-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--texte-blanc-doux);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-card-dates-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  font-size: 0.74rem;
+  color: var(--texte-doux);
+  line-height: 1.3;
+}
+
+.order-card-dates-meta strong {
+  color: var(--texte-blanc-doux);
+}
+
+.unpaid-alert-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.paid-success-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.view-detail-hint {
+  font-size: 0.72rem;
+  color: var(--violet-300);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   10. SECTION FINANCES (GRAPHIQUE NÉON & DETTES)
+   ========================================================================== */
+.chart-card-box {
+  background: rgba(30, 17, 71, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 22px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chart-bars-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 140px;
+  padding-top: 10px;
+  border-bottom: 1.5px solid rgba(167, 139, 250, 0.2);
+  gap: 10px;
+}
+
+.chart-bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chart-bar-stick {
+  width: 100%;
+  max-width: 28px;
+  background: linear-gradient(180deg, #C084FC 0%, #7C3AED 100%);
+  border-radius: 8px 8px 0 0;
+  min-height: 8px;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+  transition: height 0.5s ease;
+}
+
+.chart-bar-label {
+  font-size: 0.7rem;
+  color: var(--violet-300);
+  font-weight: 700;
+}
+
+/* Bouton Relancer sur WhatsApp */
+.btn-whatsapp-nudge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #25D366;
+  color: #FFF;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 8px 14px;
+  border-radius: var(--radius-pilule);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+  transition: transform var(--transition-rapide);
+}
+
+.btn-whatsapp-nudge:hover {
+  transform: scale(1.04);
+}
+
+/* ==========================================================================
+   11. BARRE DE NAVIGATION BASSE FLOTTANTE (FLOATING DOCK - STYLE CAPTURE !)
+   ========================================================================== */
+.bottom-nav-bar {
+  position: fixed;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  z-index: 200;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.bottom-nav-container {
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  background: rgba(22, 11, 52, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  border-radius: 32px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 24px rgba(124, 58, 237, 0.3);
+  pointer-events: auto;
+}
+
+.nav-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--texte-blanc-doux);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: all var(--transition-rapide);
+}
+
+.nav-tab-item.active {
+  background: var(--degrade-bouton);
+  color: #FFF;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.6);
+}
+
+.nav-tab-item svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Le texte du tab est masqué sauf s'il est actif */
+.nav-tab-item span {
+  display: none;
+}
+
+.nav-tab-item.active span {
+  display: inline;
+}
+
+/* Bouton central flottant + */
+.nav-fab-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--degrade-bouton);
+  color: #FFF;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.6);
+  cursor: pointer;
+  transition: transform var(--transition-rebond);
+}
+
+.nav-fab-btn:active {
+  transform: scale(0.9);
+}
+
+/* ==========================================================================
+   12. TIROIR D'ACTIONS RAPIDES (ACTION SHEET) & MODALES
+   ========================================================================== */
+.action-sheet-overlay, .app-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  background: rgba(10, 5, 22, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.action-sheet-overlay.active, .app-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app-modal-overlay {
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.action-sheet-drawer {
+  width: 100%;
+  max-width: 480px;
+  background: #170E3A;
+  border-radius: 28px 28px 0 0;
+  border-top: 1px solid rgba(167, 139, 250, 0.3);
+  padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0px)) 20px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+}
+
+.action-sheet-overlay.active .action-sheet-drawer {
+  transform: translateY(0);
+}
+
+.action-sheet-handle {
+  width: 44px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  margin: 0 auto;
+}
+
+.action-sheet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sheet-action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(30, 17, 71, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #FFF;
+  transition: all var(--transition-rapide);
+}
+
+.sheet-action-item:hover {
+  background: rgba(62, 35, 143, 0.8);
+  border-color: var(--violet-400);
+  transform: translateY(-2px);
+}
+
+.sheet-action-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--degrade-bouton);
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.app-modal-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #170E3A;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 26px;
+  padding: 22px 20px calc(24px + env(safe-area-inset-bottom, 0px)) 20px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(124, 58, 237, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: auto;
+}
+
+/* Barre de défilement fluide et discrète pour les modales */
+.app-modal-card::-webkit-scrollbar {
+  width: 5px;
+}
+
+.app-modal-card::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+}
+
+.app-modal-card::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.3);
+  border-radius: 10px;
+}
+
+.app-modal-card::-webkit-scrollbar-thumb:hover {
+  background: var(--violet-400);
+}
+
+.app-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-modal-title {
+  font-size: 1.3rem;
+  color: #FFF;
+  font-weight: 800;
+}
+
+.app-modal-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--violet-300);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  touch-action: manipulation;
+  transition: background var(--transition-rapide), color var(--transition-rapide);
+}
+
+.app-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFF;
+}
+  justify-content: center;
+  color: var(--violet-300);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+/* Grille des mesures */
+.measurements-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.measurement-section-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.measurement-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--violet-300);
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.custom-measure-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.custom-measure-name {
+  flex: 1.4;
+}
+
+.custom-measure-val {
+  flex: 1;
+}
+
+.btn-remove-custom-measure {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #F87171;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.btn-remove-custom-measure:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #FFF;
+}
+
+.measurement-pill-box {
+  background: rgba(30, 17, 71, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.measurement-pill-box label {
+  font-size: 0.72rem;
+  color: var(--violet-300);
+  font-weight: 600;
+}
+
+.measurement-pill-box strong {
+  font-size: 1rem;
+  color: #FFF;
+}
+
+.measurement-category-header {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #C084FC;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Boîte de réglages */
+.settings-box {
+  background: rgba(30, 17, 71, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 22px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Notifications Toast */
+.toast-notification {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: linear-gradient(135deg, #2E1A6B 0%, #120B2E 100%);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  color: #FFF;
+  padding: 12px 22px;
+  border-radius: var(--radius-pilule);
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 16px rgba(124, 58, 237, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1200;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-notification.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ==========================================================================
+   13. FORMULAIRES & DÉFILEMENT FLUIDE (SPÉCIFIQUE ANDROID / TACTILE)
+   ========================================================================== */
+.form-input, .form-select, textarea.form-input {
+  scroll-margin-top: 24px;
+  scroll-margin-bottom: 24px;
+}
+
+.custom-measure-name, .custom-measure-val {
+  min-width: 0;
+}
+
+.quick-actions-bar, .filter-pills-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* ==========================================================================
+   14. ADAPTATIONS ERGONOMIQUES ÉCRANS COMPACTS ANDROID (<= 380PX)
+   ========================================================================== */
+@media (max-width: 380px) {
+  .app-viewport {
+    padding: 10px 12px;
+    padding-bottom: calc(98px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .quick-actions-bar {
+    gap: 6px;
+  }
+
+  .quick-pill-card {
+    padding: 8px 4px;
+    gap: 4px;
+    font-size: 0.72rem;
+  }
+
+  .bottom-nav-bar {
+    padding: 0 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bottom-nav-container {
+    padding: 6px 6px;
+    border-radius: 26px;
+    gap: 2px;
+  }
+
+  .nav-tab-item {
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    gap: 4px;
+  }
+
+  .nav-tab-item svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .nav-fab-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .app-modal-overlay {
+    padding: 8px 6px;
+  }
+
+  .app-modal-card {
+    padding: 18px 14px calc(20px + env(safe-area-inset-bottom, 0px)) 14px;
+    border-radius: 20px;
+    max-height: calc(100dvh - 16px);
+    gap: 12px;
+  }
+
+  .app-modal-title {
+    font-size: 1.15rem;
+  }
+
+  .measurements-grid {
+    gap: 8px;
+  }
+
+  .measurement-pill-box {
+    padding: 8px 10px;
+  }
+
+  .stats-grid-2x2 {
+    gap: 8px;
+  }
+
+  .stat-card-widget {
+    padding: 12px;
+    min-height: 110px;
+  }
+
+  .stat-widget-number {
+    font-size: 1.05rem !important;
+  }
+}
+
+@media (max-height: 620px) {
+  /* Écrans de faible hauteur ou lorsque le clavier virtuel Android est déployé */
+  .app-modal-overlay {
+    align-items: flex-start;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .app-modal-card {
+    margin-top: 0;
+    margin-bottom: 0;
+    max-height: calc(100dvh - 20px);
+  }
+}
+
+/* ==========================================================================
+   MODULE DÉPENSES D'ATELIER
+   ========================================================================== */
+.expenses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.expense-card-item {
+  background: rgba(30, 17, 71, 0.6);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all var(--transition-douce);
+}
+
+.expense-card-item:hover {
+  border-color: rgba(167, 139, 250, 0.35);
+  background: rgba(30, 17, 71, 0.8);
+}
+
+.expense-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.expense-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.expense-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.expense-category-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expense-note {
+  font-size: 0.8rem;
+  color: var(--violet-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expense-date {
+  font-size: 0.72rem;
+  color: var(--texte-doux);
+}
+
+.expense-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.expense-amount-tag {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #F87171;
+  white-space: nowrap;
+}
+
+.expense-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--texte-doux);
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-rapide);
+}
+
+.expense-delete-btn:hover {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* ==========================================================================
+   MODULE REÇU DE COMMANDE (TICKET PRO & IMPRIMABLE)
+   ========================================================================== */
+.receipt-ticket-card {
+  background: linear-gradient(180deg, rgba(28, 16, 69, 0.95) 0%, rgba(18, 11, 46, 0.98) 100%);
+  border: 1.5px dashed rgba(167, 139, 250, 0.4);
+  border-radius: 20px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #FFF;
+  position: relative;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.receipt-header-brand {
+  text-align: center;
+  border-bottom: 1px dashed rgba(167, 139, 250, 0.3);
+  padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.receipt-atelier-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+}
+
+.receipt-atelier-sub {
+  font-size: 0.78rem;
+  color: var(--violet-300);
+}
+
+.receipt-ticket-ref {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #C084FC;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.receipt-body-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.receipt-row-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.receipt-row-label {
+  color: var(--violet-300);
+  font-size: 0.84rem;
+}
+
+.receipt-row-value {
+  color: #FFFFFF;
+  font-weight: 600;
+  text-align: right;
+}
+
+.receipt-financial-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.receipt-fin-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+}
+
+.receipt-fin-total {
+  border-top: 1px dashed rgba(255, 255, 255, 0.15);
+  padding-top: 8px;
+  margin-top: 2px;
+}
+
+.receipt-footer-mention {
+  text-align: center;
+  border-top: 1px dashed rgba(167, 139, 250, 0.3);
+  padding-top: 10px;
+  font-size: 0.76rem;
+  color: var(--violet-300);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   STYLE D'IMPRESSION PROPRE (POUR TÉLÉCHARGEMENT PDF & IMPRIMANTE TICKET)
+   ========================================================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .app-modal-overlay#modalRecuCommande,
+  .app-modal-overlay#modalRecuCommande * {
+    visibility: visible;
+  }
+
+  .app-modal-overlay#modalRecuCommande {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    background: #FFFFFF !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .app-modal-overlay#modalRecuCommande .app-modal-card {
+    box-shadow: none !important;
+    border: none !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    max-width: 100% !important;
+    padding: 10px !important;
+  }
+
+  .app-modal-overlay#modalRecuCommande .receipt-actions-panel,
+  .app-modal-overlay#modalRecuCommande .app-modal-close-btn {
+    display: none !important;
+  }
+
+  .receipt-ticket-card {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    padding: 16px !important;
+  }
+
+  .receipt-atelier-name,
+  .receipt-row-value {
+    color: #000000 !important;
+  }
+
+  .receipt-atelier-sub,
+  .receipt-row-label,
+  .receipt-footer-mention {
+    color: #333333 !important;
+  }
+
+  .receipt-financial-box {
+    background: #F8F8F8 !important;
+    border: 1px solid #CCCCCC !important;
+    color: #000000 !important;
+  }
+}
