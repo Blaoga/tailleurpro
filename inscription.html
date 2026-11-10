@@ -74,7 +74,10 @@
       <!-- 5. Confirmation Mot de passe -->
       <div class="form-group">
         <label for="passwordConfirmInput" class="form-label">Confirmer le mot de passe</label>
-        <input type="password" id="passwordConfirmInput" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+        <div class="password-wrapper">
+          <input type="password" id="passwordConfirmInput" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+          <button type="button" class="password-toggle-btn" id="togglePasswordConfirmBtn" aria-label="Afficher le mot de passe">Afficher</button>
+        </div>
       </div>
 
       <!-- Case Conditions d'utilisation -->
@@ -97,6 +100,7 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
   <script src="js/pays.js"></script>
   <script src="js/utils.js"></script>
@@ -142,12 +146,18 @@
       actualiserAffichagePays();
 
       // 4. Toggle affichage mot de passe
+      const togglePwdConfirm = document.getElementById('togglePasswordConfirmBtn');
+
       togglePwd.addEventListener('click', () => {
         const estMasque = pwdInput.type === 'password';
         pwdInput.type = estMasque ? 'text' : 'password';
-        pwdConfirmInput.type = estMasque ? 'text' : 'password';
         togglePwd.textContent = estMasque ? 'Masquer' : 'Afficher';
-        togglePwd.setAttribute('aria-label', estMasque ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+      });
+
+      togglePwdConfirm?.addEventListener('click', () => {
+        const estMasque = pwdConfirmInput.type === 'password';
+        pwdConfirmInput.type = estMasque ? 'text' : 'password';
+        togglePwdConfirm.textContent = estMasque ? 'Masquer' : 'Afficher';
       });
 
       // 5. Indicateur de force en temps réel
@@ -213,18 +223,34 @@
 
         // Début du chargement
         submitBtn.disabled = true;
-        btnText.textContent = "Création de votre atelier...";
+        btnText.textContent = "Création de votre atelier en cours...";
 
         try {
-          await Auth.inscrire({
+          const resultat = await Auth.inscrire({
             prenom,
             codePays,
             telephoneSaisi,
             motDePasse
           });
 
-          // Succès : redirection vers app.html
-          window.location.replace('app.html');
+          // Cas où Supabase a encore "Confirm email" activé
+          if (resultat?.user && !resultat?.session) {
+            afficherErreur("Votre compte a été créé, mais la confirmation d'email est encore active dans votre projet Supabase. Veuillez désactiver 'Confirm email' dans Supabase (Authentication > Providers > Email) pour entrer directement.");
+            submitBtn.disabled = false;
+            btnText.textContent = "Créer mon compte et commencer l'essai";
+            return;
+          }
+
+          // Message de succès bien visible et rassurant
+          sessionStorage.setItem('tailleurpro_bienvenue_nouveau', 'true');
+          alertBox.className = 'auth-alert-message success';
+          alertBox.innerHTML = `<strong>✓ Félicitations ${echapperHTML(prenom)} !</strong> Votre compte est créé avec vos 15 jours d'essai gratuit. Chargement de votre atelier...`;
+          btnText.textContent = "✓ Inscription réussie !";
+
+          // Redirection fluide après 1,5 seconde
+          setTimeout(() => {
+            window.location.replace('app.html');
+          }, 1500);
         } catch (err) {
           afficherErreur(err.message || "Une erreur est survenue lors de l'inscription.");
           submitBtn.disabled = false;

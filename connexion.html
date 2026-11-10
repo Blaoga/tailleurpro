@@ -76,6 +76,7 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
   <script src="js/pays.js"></script>
   <script src="js/utils.js"></script>
@@ -162,8 +163,13 @@
             motDePasse
           });
 
-          // Succès : redirection vers app.html
-          window.location.replace('app.html');
+          // Succès : message et redirection
+          alertBox.className = 'auth-alert-message success';
+          alertBox.innerHTML = "✓ Connexion réussie ! Chargement de votre atelier...";
+          btnText.textContent = "✓ Connecté !";
+          setTimeout(() => {
+            window.location.replace('app.html');
+          }, 800);
         } catch (err) {
           afficherErreur(err.message || "Erreur de connexion.");
           submitBtn.disabled = false;

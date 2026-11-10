@@ -1,0 +1,29 @@
+# ==============================================================================
+# TAILLEUR PRO - GITIGNORE (SÉCURITÉ ET PROTECTION DES CLÉS)
+# ==============================================================================
+
+# Fichiers d'environnement contenant des clés secrètes ou locales
+.env
+.env.local
+.env.*.local
+*.env
+env.local
+env.*.local
+js/env.local.js
+
+# Fichiers système et éditeur
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Logs et traces
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Dépendances éventuelles
+node_modules/
+dist/
+build/

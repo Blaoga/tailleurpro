@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accès Direct Dashboard | Tailleur Pro</title>
+  <meta name="theme-color" content="#120B2E">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <style>
+    .direct-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(23, 14, 58, 0.95);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      border-radius: 26px;
+      padding: 30px 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(124,58,237,0.3);
+      text-align: center;
+      color: #FFF;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .direct-logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .direct-spinner {
+      width: 42px;
+      height: 42px;
+      border: 4px solid rgba(167, 139, 250, 0.2);
+      border-top-color: #A855F7;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 10px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-msg {
+      font-size: 0.95rem;
+      color: var(--violet-300);
+      min-height: 24px;
+      line-height: 1.5;
+    }
+
+    .status-msg.error {
+      color: #F87171;
+    }
+
+    .btn-action-direct {
+      width: 100%;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: var(--radius-pilule);
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-action-direct.primary {
+      background: var(--degrade-bouton);
+      color: #FFF;
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+    }
+
+    .btn-action-direct.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #FFF;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+    }
+
+    .btn-action-direct:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.6);
+    }
+  </style>
+</head>
+<body class="auth-page">
+
+  <div class="direct-card">
+    <div class="direct-logo">
+      <span>✂️</span>
+      <span>Tailleur<span style="color:#C084FC;">Pro</span></span>
+    </div>
+
+    <h2 style="font-size:1.3rem; font-weight:800; margin:0;">Accès Rapide au Dashboard</h2>
+
+    <div class="direct-spinner" id="loaderIcon"></div>
+    <div class="status-msg" id="statusMessage">Connexion automatique à votre atelier en cours...</div>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;" id="actionButtons">
+      <button class="btn-action-direct primary" id="btnAutoLogin" onclick="lancerConnexion()">
+        🚀 Entrer dans mon Atelier (Compte BLAOGA)
+      </button>
+
+      <a href="connexion.html" class="btn-action-direct secondary">
+        🔑 Se connecter avec un autre numéro
+      </a>
+
+      <a href="index.html" style="font-size:0.82rem; color:var(--violet-300); text-decoration:none; margin-top:6px;">
+        ← Retourner à la page d'accueil
+      </a>
+    </div>
+  </div>
+
+  <!-- Scripts nécessaires -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/env.local.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/pays.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    // Identifiants du compte (lus depuis env.local ou fallback)
+    const COMPTE_AUTO = {
+      email: (typeof window !== 'undefined' && window.__ENV__?.TEST_EMAIL) || "237690612022@tailleurpro.app",
+      pass: (typeof window !== 'undefined' && window.__ENV__?.TEST_PASS) || "Blaoga1@"
+    };
+
+    async function lancerConnexion() {
+      const statusEl = document.getElementById('statusMessage');
+      const loader = document.getElementById('loaderIcon');
+      const btn = document.getElementById('btnAutoLogin');
+
+      if (loader) loader.style.display = 'block';
+      if (btn) btn.disabled = true;
+      statusEl.className = 'status-msg';
+      statusEl.textContent = "Vérification de la session...";
+
+      try {
+        // 1. Vérifier si une session Supabase existe déjà
+        const sessionActive = await Auth.obtenirSession();
+        if (sessionActive?.user) {
+          statusEl.textContent = "✓ Session trouvée ! Ouverture du dashboard...";
+          setTimeout(() => {
+            window.location.replace('app.html');
+          }, 400);
+          return;
+        }
+
+        // 2. Connexion directe avec le compte BLAOGA
+        statusEl.textContent = "Connexion au compte BLAOGA...";
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: COMPTE_AUTO.email,
+          password: COMPTE_AUTO.pass
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data?.session) {
+          statusEl.textContent = "✓ Connexion réussie ! Chargement de votre atelier...";
+          setTimeout(() => {
+            window.location.replace('app.html');
+          }, 600);
+          return;
+        }
+
+        throw new Error("Impossible d'obtenir une session.");
+
+      } catch (err) {
+        if (loader) loader.style.display = 'none';
+        if (btn) btn.disabled = false;
+        statusEl.className = 'status-msg error';
+        statusEl.innerHTML = `⚠️ ${err.message || 'Erreur de connexion automatique.'}<br><span style="font-size:0.8rem; color:#FFF;">Cliquez sur le bouton ci-dessus pour réessayer ou utilisez Connexion.</span>`;
+      }
+    }
+
+    // Lancer automatiquement dès l'ouverture de la page
+    document.addEventListener('DOMContentLoaded', () => {
+      lancerConnexion();
+    });
+  </script>
+</body>
+</html>

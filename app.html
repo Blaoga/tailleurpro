@@ -4,33 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mon Atelier | Tailleur Pro</title>
-  <meta name="theme-color" content="#120B2E">
+  <meta name="theme-color" content="#0D0722">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/auth.css">
 </head>
 <body class="app-body">
 
+  <!-- Halos lumineux d'ambiance en arrière-plan -->
+  <div class="app-bg-glow app-bg-glow-1" aria-hidden="true"></div>
+  <div class="app-bg-glow app-bg-glow-2" aria-hidden="true"></div>
+
   <!-- ========================================================================
-       EN-TÊTE FIXE DU DASHBOARD
+       EN-TÊTE FIXE DU DASHBOARD (STYLE LUXE SOMBRE)
        ======================================================================== -->
   <header class="app-header">
     <div class="app-header-container">
-      <div class="user-greeting">
-        <span class="greeting-name" id="userNameDisplay">Bonjour...</span>
-        <span class="greeting-atelier" id="userAtelierDisplay">Chargement de votre atelier...</span>
+      <div class="user-profile-badge">
+        <div class="user-avatar-hex" id="userAvatarInitials">
+          <span>TP</span>
+          <div class="online-pulse-dot" title="Atelier actif"></div>
+        </div>
+        <div class="user-greeting">
+          <span class="greeting-name" id="userNameDisplay">Bonjour...</span>
+          <span class="greeting-atelier" id="userAtelierDisplay">Chargement de l'atelier...</span>
+        </div>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="header-action-group">
+        <!-- Basculeur de thème (Soleil / Nuit) -->
+        <button class="header-icon-pill" id="btnToggleTheme" aria-label="Changer de thème" title="Basculer thème clair/sombre">
+          <span id="themeIcon">☀️</span>
+        </button>
+
         <!-- Cloche de notification -->
-        <button class="header-action-btn" id="notifBellBtn" aria-label="Notifications et alertes">
+        <button class="header-icon-pill" id="notifBellBtn" aria-label="Notifications" onclick="App.afficherOnglet('accueil')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
           </svg>
+          <div class="bell-badge-count" id="headerAlertDot" style="display:none;"></div>
         </button>
 
         <!-- Déconnexion rapide -->
-        <button class="header-action-btn" id="btnDeconnexion" aria-label="Se déconnecter" title="Se déconnecter">
+        <button class="header-icon-pill" id="btnDeconnexion" aria-label="Se déconnecter" title="Se déconnecter">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
@@ -42,96 +59,329 @@
   </header>
 
   <!-- ========================================================================
-       CADRE PRINCIPAL (MAX 480PX MOBILE-FIRST)
+       CADRE PRINCIPAL VIEWPORT (MAX 480PX)
        ======================================================================== -->
   <main class="app-viewport">
-    <!-- Barre d'état de l'essai gratuit (Section 8.1) -->
-    <div class="trial-banner" id="trialBanner">
-      <div class="trial-info">
-        <span class="trial-days" id="trialDaysText">🎉 Période d'essai actif (15 jours offerts)</span>
-        <span class="trial-sub">Accès complet à toutes les fonctionnalités</span>
+
+    <!-- Capsule d'état de l'essai gratuit (Section 8.1) -->
+    <div class="trial-pill-card" id="trialBanner">
+      <div class="trial-info-block">
+        <span class="trial-main-title">
+          <span>🎁</span>
+          <span id="trialDaysText">Période d'essai actif (15 jours offerts)</span>
+        </span>
+        <span class="trial-sub-text">Accès illimité aux fiches, mesures &amp; rappels</span>
       </div>
-      <a href="abonnement.html" class="btn btn-secondary" style="font-size: 0.8rem; min-height: 36px; padding: 0 12px;">
-        Voir l'offre
+      <a href="abonnement.html" class="trial-cta-btn">
+        Passer Pro ⭐
       </a>
     </div>
 
-    <!-- Section Accueil préliminaire -->
-    <section id="sectionAccueil" class="app-tab-content">
-      <div style="background: white; border-radius: var(--radius-carte); padding: var(--space-4); border: 1px solid rgba(124, 58, 237, 0.12); box-shadow: var(--verre-lueur-clair);">
-        <h2 style="font-size: 1.25rem; color: var(--violet-950); margin-bottom: 8px;">Bienvenue dans votre espace !</h2>
-        <p style="font-size: 0.95rem; color: var(--texte-doux); line-height: 1.6;">
-          Votre compte atelier est opérationnel et sécurisé par numéro de téléphone.
-        </p>
+    <!-- ======================================================================
+         ONGLET 1 : ACCUEIL
+         ====================================================================== -->
+    <section id="tabSection_accueil" class="app-tab-section active">
+      <!-- Notification discrète d'inscription réussie sur le Dashboard -->
+      <div id="welcomeSuccessBanner" class="welcome-toast-card" style="display: none;">
+        <div class="welcome-toast-icon">🎉</div>
+        <div class="welcome-toast-content">
+          <div class="welcome-toast-title">Inscription réussie !</div>
+          <div class="welcome-toast-sub">Bienvenue dans votre atelier. Vos 15 jours d'essai gratuit sont activés.</div>
+        </div>
+        <button type="button" class="welcome-toast-close" onclick="App.fermerBanniereBienvenue()" aria-label="Fermer">✕</button>
+      </div>
+
+      <!-- Bandeau d'alerte livraisons (en retard ou demain) -->
+      <div id="homeAlertBannerBox"></div>
+
+      <!-- Grille de 4 statistiques 2x2 en verre (Style capture) -->
+      <div class="stats-grid-2x2">
+        <!-- 1. Commandes en cours -->
+        <div class="stat-card-widget">
+          <div>
+            <div class="stat-icon-wrapper">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <div class="stat-widget-title">Commandes en cours</div>
+            <div class="stat-widget-number" id="statEnCours">0</div>
+          </div>
+          <button class="stat-corner-chip" onclick="App.filtrerCommandes('en_cours')">Voir tout →</button>
+        </div>
+
+        <!-- 2. À livrer cette semaine -->
+        <div class="stat-card-widget">
+          <div>
+            <div class="stat-icon-wrapper gold">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="stat-widget-title">À livrer cette semaine</div>
+            <div class="stat-widget-number" id="statSemaine" style="color: #FBBF24;">0</div>
+          </div>
+          <button class="stat-corner-chip" onclick="App.filtrerCommandes('a_livrer')">Planifiées →</button>
+        </div>
+
+        <!-- 3. Argent à encaisser (avances & dettes) -->
+        <div class="stat-card-widget">
+          <div>
+            <div class="stat-icon-wrapper">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="stat-widget-title">Argent à encaisser</div>
+            <div class="stat-widget-number" id="statAEncaisser" style="font-size: 1.15rem; color: #C084FC;">0 F</div>
+          </div>
+          <button class="stat-corner-chip" onclick="App.afficherOnglet('finances')">Dettes →</button>
+        </div>
+
+        <!-- 4. Gagné ce mois -->
+        <div class="stat-card-widget">
+          <div>
+            <div class="stat-icon-wrapper green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <div class="stat-widget-title">Gagné ce mois</div>
+            <div class="stat-widget-number" id="statMois" style="font-size: 1.15rem; color: #4ADE80;">0 F</div>
+          </div>
+          <button class="stat-corner-chip" onclick="App.afficherOnglet('finances')">Bilan →</button>
+        </div>
+      </div>
+
+      <!-- Actions rapides 100% visibles sans coupure (Section 8.1) -->
+      <div>
+        <div class="section-title-label">Actions Rapides</div>
+        <div class="quick-actions-bar">
+          <button class="quick-pill-card" onclick="App.ouvrirModalNouvelleCommande()" title="Nouvelle Commande">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Commande</span>
+          </button>
+          <button class="quick-pill-card" onclick="App.ouvrirModalNouveauClient()" title="Nouveau Client">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            <span>Client</span>
+          </button>
+          <button class="quick-pill-card" onclick="App.filtrerCommandes('impayees')" title="Encaisser les acomptes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Acompte</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Activité récente -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+          <span class="section-title-label" style="margin-bottom:0;">Dernières Commandes</span>
+          <button class="section-link-action" onclick="App.afficherOnglet('commandes')">Voir tout →</button>
+        </div>
+        <div class="orders-list" id="homeRecentActivityList"></div>
       </div>
     </section>
+
+    <!-- ======================================================================
+         ONGLET 2 : CLIENTS (Section 8.2)
+         ====================================================================== -->
+    <section id="tabSection_clients" class="app-tab-section">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="font-size:1.3rem; color:#FFF; font-weight:800;">Mes Clients</h2>
+        <button class="btn btn-primary" style="min-height:38px; padding:0 16px; font-size:0.85rem;" onclick="App.ouvrirModalNouveauClient()">+ Nouveau client</button>
+      </div>
+
+      <!-- Recherche instantanée -->
+      <div class="search-glow-wrapper">
+        <svg class="search-glow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="clientSearchInput" class="form-input" placeholder="Rechercher un client ou numéro...">
+      </div>
+
+      <!-- Liste des clients -->
+      <div class="clients-list" id="clientsListContainer"></div>
+    </section>
+
+    <!-- ======================================================================
+         ONGLET 3 : COMMANDES (Section 8.3)
+         ====================================================================== -->
+    <section id="tabSection_commandes" class="app-tab-section">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="font-size:1.3rem; color:#FFF; font-weight:800;">Commandes</h2>
+        <button class="btn btn-primary" style="min-height:38px; padding:0 16px; font-size:0.85rem;" onclick="App.ouvrirModalNouvelleCommande()">+ Commande</button>
+      </div>
+
+      <!-- Pastilles de filtres horizontales -->
+      <div class="filter-pills-scroll" id="ordersPillsBar">
+        <button class="filter-pill active" data-filter="toutes" onclick="App.filtrerCommandes('toutes')">Toutes</button>
+        <button class="filter-pill" data-filter="en_cours" onclick="App.filtrerCommandes('en_cours')">En cours</button>
+        <button class="filter-pill" data-filter="a_livrer" onclick="App.filtrerCommandes('a_livrer')">À livrer</button>
+        <button class="filter-pill" data-filter="impayees" onclick="App.filtrerCommandes('impayees')">Impayées</button>
+        <button class="filter-pill" data-filter="livrees" onclick="App.filtrerCommandes('livrees')">Livrées</button>
+      </div>
+
+      <!-- Liste des commandes -->
+      <div class="orders-list" id="ordersListContainer"></div>
+    </section>
+
+    <!-- ======================================================================
+         ONGLET 4 : FINANCES & DETTES (Section 8.4)
+         ====================================================================== -->
+    <section id="tabSection_finances" class="app-tab-section">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="font-size:1.3rem; color:#FFF; font-weight:800;">Finances de l'Atelier</h2>
+        <button class="btn btn-primary" style="min-height:38px; padding:0 16px; font-size:0.85rem;" onclick="App.ouvrirModalNouvelleDepense()">+ Dépense</button>
+      </div>
+
+      <!-- 4 Cartes de synthèse financière 2x2 -->
+      <div class="stats-grid-2x2">
+        <!-- 1. Encaissé ce mois -->
+        <div class="stat-card-widget">
+          <div class="stat-widget-title">Encaissé ce mois</div>
+          <div class="stat-widget-number" id="financesTotalEncaisse" style="color:#4ADE80; font-size:1.25rem;">0 F</div>
+          <span style="font-size:0.7rem; color:var(--violet-300);">Chiffre d'affaires ↑</span>
+        </div>
+
+        <!-- 2. Dépenses ce mois -->
+        <div class="stat-card-widget">
+          <div class="stat-widget-title">Dépenses ce mois</div>
+          <div class="stat-widget-number" id="financesTotalDepenses" style="color:#F87171; font-size:1.25rem;">0 F</div>
+          <span style="font-size:0.7rem; color:var(--violet-300);">Achats &amp; Charges</span>
+        </div>
+
+        <!-- 3. Bénéfice net réel -->
+        <div class="stat-card-widget">
+          <div class="stat-widget-title">Bénéfice net du mois</div>
+          <div class="stat-widget-number" id="financesBeneficeNet" style="color:#38BDF8; font-size:1.25rem;">0 F</div>
+          <span style="font-size:0.7rem; color:#4ADE80;">Gain réel en poche</span>
+        </div>
+
+        <!-- 4. Reste à encaisser -->
+        <div class="stat-card-widget">
+          <div class="stat-widget-title">Reste à encaisser</div>
+          <div class="stat-widget-number" id="financesResteAEncaisser" style="color:#FBBF24; font-size:1.25rem;">0 F</div>
+          <span style="font-size:0.7rem; color:var(--violet-300);">Dettes &amp; Acomptes</span>
+        </div>
+      </div>
+
+      <!-- Dépenses d'Atelier -->
+      <div style="margin-top:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:0.95rem; font-weight:800; color:#FFF;">Dépenses de l'Atelier</span>
+          <button class="filter-pill active" onclick="App.ouvrirModalNouvelleDepense()" style="font-size:0.78rem;">+ Ajouter</button>
+        </div>
+        <div class="expenses-list" id="depensesListContainer"></div>
+      </div>
+
+      <!-- Graphique en barres interactif néon (Section 8.4) -->
+      <div class="chart-card-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.9rem; font-weight:800; color:#FFF;">Activité Hebdomadaire</span>
+          <span style="font-size:0.75rem; color:var(--violet-300);">Commandes livrées</span>
+        </div>
+
+        <div class="chart-bars-container" id="financeBarsChart">
+          <div class="chart-bar-column"><div class="chart-bar-stick" style="height: 35%;"></div><span class="chart-bar-label">Lun</span></div>
+          <div class="chart-bar-column"><div class="chart-bar-stick" style="height: 60%;"></div><span class="chart-bar-label">Mar</span></div>
+          <div class="chart-bar-column"><div class="chart-bar-stick" style="height: 45%;"></div><span class="chart-bar-label">Mer</span></div>
+          <div class="chart-bar-column"><div class="chart-bar-stick" style="height: 85%;"></div><span class="chart-bar-label">Jeu</span></div>
+          <div class="chart-bar-column"><div class="chart-bar-stick" style="height: 95%;"></div><span class="chart-bar-label">Ven</span></div>
+          <div class="chart-bar-column"><div class="chart-bar-stick" style="height: 70%;"></div><span class="chart-bar-label">Sam</span></div>
+          <div class="chart-bar-column"><div class="chart-bar-stick" style="height: 20%;"></div><span class="chart-bar-label">Dim</span></div>
+        </div>
+      </div>
+
+      <!-- Liste "Qui me doit de l'argent" avec bouton WhatsApp (Section 8.4) -->
+      <div>
+        <div style="font-size:0.95rem; font-weight:800; color:#FFF; margin: 10px 0;">
+          Qui me doit de l'argent ?
+        </div>
+        <div class="debts-list" id="debtsListContainer"></div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         ONGLET 5 : RÉGLAGES (Section 8.5)
+         ====================================================================== -->
+    <section id="tabSection_reglages" class="app-tab-section">
+      <h2 style="font-size:1.3rem; color:#FFF; font-weight:800;">Réglages &amp; Atelier</h2>
+
+      <!-- Formulaire Profil -->
+      <div class="settings-box">
+        <h3 style="font-size:1rem; color:#FFF; font-weight:800;">Profil de votre atelier</h3>
+        
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Votre Prénom</label>
+          <input type="text" id="reglagePrenom" class="form-input" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Nom de l'atelier</label>
+          <input type="text" id="reglageAtelier" class="form-input" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Ville</label>
+          <input type="text" id="reglageVille" class="form-input" placeholder="Ex: Douala, Abidjan, Brazzaville" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Rappels automatiques avant livraison</label>
+          <select id="reglageRappelJours" class="form-select" style="background:rgba(30,17,71,0.9); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            <option value="1">1 jour avant la date</option>
+            <option value="2">2 jours avant la date</option>
+            <option value="3">3 jours avant la date</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%; min-height:44px; margin-top:8px;" onclick="App.enregistrerReglages()">
+          Enregistrer les modifications
+        </button>
+      </div>
+
+      <!-- Sauvegarde & Export JSON (Section 8.5) -->
+      <div class="settings-box">
+        <h3 style="font-size:1rem; color:#FFF; font-weight:800;">Sauvegarde de vos données</h3>
+        <p style="font-size:0.85rem; color:var(--texte-blanc-doux);">
+          Téléchargez une copie complète et sécurisée de tous vos clients, mesures et commandes au format JSON.
+        </p>
+        <button class="btn btn-secondary" style="width:100%; min-height:44px;" onclick="Store.exporterDonneesJSON()">
+          Télécharger ma sauvegarde (JSON)
+        </button>
+      </div>
+
+      <!-- Abonnement -->
+      <div class="settings-box">
+        <h3 style="font-size:1.05rem; color:#FFF; font-weight:800; text-align:center;">Abonnement Tailleur Pro</h3>
+        <p style="font-size:0.82rem; color:var(--texte-blanc-doux); margin:4px 0 14px 0; text-align:center;">
+          0 FCFA pendant 15 jours d'essai, puis choisissez votre formule :
+        </p>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:14px;">
+          <div style="background:rgba(255,255,255,0.06); padding:12px 10px; border-radius:14px; border:1px solid rgba(167,139,250,0.22); text-align:center;">
+            <div style="font-size:0.75rem; color:var(--violet-300); font-weight:800;">UN TAILLEUR</div>
+            <div style="font-size:1.2rem; font-weight:800; color:#FFF; margin:4px 0;">2 600 F<span style="font-size:0.75rem; font-weight:400; color:var(--texte-blanc-doux);">/mois</span></div>
+            <div style="font-size:0.72rem; color:var(--texte-blanc-doux);">Artisan indépendant</div>
+          </div>
+
+          <div style="background:rgba(124,58,237,0.18); padding:12px 10px; border-radius:14px; border:1.5px solid rgba(167,139,250,0.4); text-align:center; position:relative;">
+            <span style="position:absolute; top:-9px; right:8px; background:var(--succes); color:#000; font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:10px;">⭐ RECOMMANDÉ</span>
+            <div style="font-size:0.75rem; color:#FBBF24; font-weight:800;">ATELIER</div>
+            <div style="font-size:1.2rem; font-weight:800; color:#FFF; margin:4px 0;">5 100 F<span style="font-size:0.75rem; font-weight:400; color:var(--texte-blanc-doux);">/mois</span></div>
+            <div style="font-size:0.72rem; color:var(--texte-blanc-doux);">Équipe &amp; Apprentis</div>
+          </div>
+        </div>
+
+        <a href="abonnement.html" class="btn btn-primary" style="width:100%; min-height:44px; justify-content:center;">Gérer / Activer mon abonnement</a>
+      </div>
+    </section>
+
   </main>
 
   <!-- ========================================================================
-       MODAL DE BIENVENUE EN 3 ÉTAPES (SECTION 7.4)
-       Déclenché automatiquement après la première inscription
+       BARRE DE NAVIGATION BASSE FLOTTANTE (STYLE CAPTURE OFFICIELLE)
        ======================================================================== -->
-  <div class="modal-overlay" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
-    <div class="modal-card">
-      <div class="badge badge-succes modal-badge-step">
-        <span>🎉 Inscription réussie !</span>
-      </div>
-
-      <div>
-        <h2 class="modal-title" id="welcomeTitle">Bienvenue sur Tailleur Pro</h2>
-        <p style="font-size: 0.9rem; color: var(--texte-doux); margin-top: 4px;">
-          Vos 15 jours gratuits sont activés. Voici comment démarrer en 3 étapes :
-        </p>
-      </div>
-
-      <div class="modal-step-list">
-        <!-- Étape 1 -->
-        <div class="modal-step-item">
-          <div class="modal-step-num">1</div>
-          <div class="modal-step-content">
-            <span class="modal-step-heading">Ajoutez votre premier client</span>
-            <span class="modal-step-text">Notez son prénom, son numéro de téléphone et ses mesures clés (poitrine, taille, épaules).</span>
-          </div>
-        </div>
-
-        <!-- Étape 2 -->
-        <div class="modal-step-item">
-          <div class="modal-step-num">2</div>
-          <div class="modal-step-content">
-            <span class="modal-step-heading">Enregistrez une commande</span>
-            <span class="modal-step-text">Indiquez le vêtement, le tissu confié, le prix total, l'avance reçue et la date promise.</span>
-          </div>
-        </div>
-
-        <!-- Étape 3 -->
-        <div class="modal-step-item">
-          <div class="modal-step-num">3</div>
-          <div class="modal-step-content">
-            <span class="modal-step-heading">Réglez vos rappels</span>
-            <span class="modal-step-text">Recevez des alertes automatiques 1, 2 ou 3 jours avant chaque livraison pour ne plus jamais être en retard.</span>
-          </div>
-        </div>
-      </div>
-
-      <button type="button" class="btn btn-primary" id="btnFermerBienvenue" style="width: 100%;">
-        <span>C'est parti, ouvrir mon atelier !</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- ========================================================================
-       BARRE DE NAVIGATION BASSE (MOBILE-FIRST)
-       ======================================================================== -->
-  <nav class="bottom-nav-bar" aria-label="Navigation de l'application">
+  <nav class="bottom-nav-bar" aria-label="Navigation principale">
     <div class="bottom-nav-container">
-      <button class="nav-tab-item active" data-tab="accueil">
+      <button class="nav-tab-item active" data-tab="accueil" title="Accueil">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
         <span>Accueil</span>
       </button>
 
-      <button class="nav-tab-item" data-tab="clients">
+      <button class="nav-tab-item" data-tab="clients" title="Clients">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
           <circle cx="9" cy="7" r="4"></circle>
@@ -141,15 +391,15 @@
         <span>Clients</span>
       </button>
 
-      <!-- Bouton flottant + -->
-      <button class="nav-fab-btn" id="fabQuickActionBtn" aria-label="Ajouter une commande ou un client">
+      <!-- Bouton central flottant + (Ouvre le Action Sheet) -->
+      <button class="nav-fab-btn" id="fabQuickActionBtn" aria-label="Action rapide" title="Nouvelle action">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
       </button>
 
-      <button class="nav-tab-item" data-tab="commandes">
+      <button class="nav-tab-item" data-tab="commandes" title="Commandes">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
           <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -158,7 +408,15 @@
         <span>Commandes</span>
       </button>
 
-      <button class="nav-tab-item" data-tab="reglages">
+      <button class="nav-tab-item" data-tab="finances" title="Finances">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <span>Finances</span>
+      </button>
+
+      <button class="nav-tab-item" data-tab="reglages" title="Réglages">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -168,49 +426,601 @@
     </div>
   </nav>
 
+  <!-- ========================================================================
+       TIROIR D'ACTION RAPIDE (ACTION SHEET DU FAB +)
+       ======================================================================== -->
+  <div class="action-sheet-overlay" id="actionSheetOverlay">
+    <div class="action-sheet-drawer">
+      <div class="action-sheet-handle"></div>
+      <div class="action-sheet-title" style="color:#FFF;">Action rapide</div>
+      <div class="action-sheet-grid">
+        <div class="sheet-action-item" onclick="App.ouvrirModalNouvelleCommande()">
+          <div class="sheet-action-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+          </div>
+          <span>Nouvelle commande</span>
+        </div>
+
+        <div class="sheet-action-item" onclick="App.ouvrirModalNouveauClient()">
+          <div class="sheet-action-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <span>Nouveau client</span>
+        </div>
+
+        <div class="sheet-action-item" onclick="App.filtrerCommandes('impayees')">
+          <div class="sheet-action-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <span>Encaisser acompte</span>
+        </div>
+
+        <div class="sheet-action-item" onclick="App.ouvrirModalNouveauClient()">
+          <div class="sheet-action-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          </div>
+          <span>Prendre mesures</span>
+        </div>
+
+        <div class="sheet-action-item" onclick="App.ouvrirModalNouvelleDepense()">
+          <div class="sheet-action-icon-box" style="background:rgba(248,113,113,0.18); border-color:rgba(248,113,113,0.3);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <span>Noter dépense</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 1 : NOUVEAU CLIENT AVEC MESURES COMPLÈTES (Section 8.2)
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalNouveauClient">
+    <div class="app-modal-card">
+      <div class="app-modal-header">
+        <h3 class="app-modal-title" id="titreModalClient">Nouveau Client</h3>
+        <button class="app-modal-close-btn">&times;</button>
+      </div>
+
+      <form id="formNouveauClient" onsubmit="App.soumettreNouveauClient(event)">
+        <input type="hidden" id="clientIdInput" value="">
+
+        <!-- Infos Générales -->
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Nom complet du client *</label>
+          <input type="text" id="clientNomInput" class="form-input" placeholder="Ex: Mme Aïssatou Diallo" required style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Numéro WhatsApp / Téléphone</label>
+          <input type="tel" id="clientTelInput" class="form-input" placeholder="Ex: 6 70 12 34 56" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <!-- Section 1 : HAUT DU CORPS -->
+        <div class="measurement-section-box">
+          <div class="measurement-section-title">
+            <span>👕 Haut du Corps (Chemise, Robe, Veste, Boubou)</span>
+          </div>
+
+          <div class="measurements-grid">
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Épaules / Carrure</label>
+              <input type="number" step="0.5" id="mesureEpaules" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Poitrine</label>
+              <input type="number" step="0.5" id="mesurePoitrine" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour Taille / Ventre</label>
+              <input type="number" step="0.5" id="mesureTailleHaut" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Bassin / Hanches</label>
+              <input type="number" step="0.5" id="mesureBassin" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Longueur Vêtement / Robe</label>
+              <input type="number" step="0.5" id="mesureLongueurHaut" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Longueur Manche</label>
+              <input type="number" step="0.5" id="mesureLongueurManche" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Bras / Biceps</label>
+              <input type="number" step="0.5" id="mesureTourBras" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Poignet</label>
+              <input type="number" step="0.5" id="mesurePoignet" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Cou / Col</label>
+              <input type="number" step="0.5" id="mesureCou" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2 : BAS DU CORPS -->
+        <div class="measurement-section-box">
+          <div class="measurement-section-title">
+            <span>👖 Bas du Corps (Pantalon, Jupe, Rein, Jambe)</span>
+          </div>
+
+          <div class="measurements-grid">
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Rein / Ceinture</label>
+              <input type="number" step="0.5" id="mesureRein" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Taille (Bas)</label>
+              <input type="number" step="0.5" id="mesureTailleBas" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Longueur Pantalon / Jambe</label>
+              <input type="number" step="0.5" id="mesureLongueurPantalon" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Cuisse</label>
+              <input type="number" step="0.5" id="mesureCuisse" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Tour de Genou</label>
+              <input type="number" step="0.5" id="mesureGenou" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Bas Pantalon / Tour Jambe</label>
+              <input type="number" step="0.5" id="mesureTourJambe" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label" style="color:var(--texte-blanc-doux);">Entrejambe / Fourche / Fond</label>
+              <input type="number" step="0.5" id="mesureFourche" class="form-input" placeholder="cm" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3 : MESURES LIBRES & PERSONNALISÉES -->
+        <div class="measurement-section-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div class="measurement-section-title" style="margin-bottom:0;">
+              <span>➕ Autres mesures libres (Illimité)</span>
+            </div>
+            <button type="button" class="btn btn-outline-violet" style="font-size:0.75rem; min-height:28px; padding:0 10px;" onclick="App.ajouterLigneMesureLibre()">+ Ajouter</button>
+          </div>
+          <p style="font-size:0.75rem; color:var(--violet-300); margin-bottom:10px;">Ajoutez n'importe quelle partie spécifique selon le vêtement (ex: hauteur poitrine, fente, chapeau, traîne...).</p>
+
+          <div id="mesuresPersonnaliseesContainer">
+            <!-- Lignes dynamiques ajoutées ici -->
+          </div>
+        </div>
+
+        <!-- Section 4 : Notes & Préférences -->
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Notes, style ou préférences du client</label>
+          <textarea id="clientNotesInput" class="form-input" rows="2" placeholder="Préférence de col, style cintré, type de doublure, finitions..." style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);"></textarea>
+        </div>
+
+        <button type="submit" id="btnSubmitClient" class="btn btn-primary" style="width:100%; min-height:48px; margin-top:8px;">
+          Enregistrer le client &amp; mesures
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2 : FICHE DÉTAIL CLIENT & MESURES (Section 8.2)
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalFicheClient">
+    <div class="app-modal-card">
+      <div class="app-modal-header">
+        <div>
+          <h3 class="app-modal-title" id="ficheClientNom">Client</h3>
+          <div style="font-size:0.85rem; color:var(--violet-300);" id="ficheClientPhone"></div>
+        </div>
+        <button class="app-modal-close-btn">&times;</button>
+      </div>
+
+      <!-- Boutons Appel & WhatsApp direct -->
+      <div style="display:flex; gap:10px; margin: 4px 0 8px 0;">
+        <a id="btnFicheAppel" href="#" class="btn btn-secondary" style="flex:1; min-height:40px; font-size:0.85rem;">
+          📞 Appeler
+        </a>
+        <a id="btnFicheWA" href="#" target="_blank" class="btn-whatsapp-nudge" style="flex:1; justify-content:center; min-height:40px; font-size:0.85rem;">
+          💬 WhatsApp
+        </a>
+      </div>
+
+      <!-- Mesures Enregistrées -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+        <span style="font-size:0.85rem; font-weight:800; color:var(--violet-300); text-transform:uppercase; letter-spacing:0.04em;">Mesures du client :</span>
+        <button type="button" class="btn btn-outline-violet" style="font-size:0.75rem; min-height:28px; padding:0 10px;" id="btnCopierMesures">📋 Copier les mesures</button>
+      </div>
+
+      <div id="ficheClientMesures" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;"></div>
+
+      <div style="font-size:0.85rem; font-weight:800; color:var(--violet-300); margin-top:8px; text-transform:uppercase; letter-spacing:0.04em;">Notes &amp; Préférences :</div>
+      <p id="ficheClientNotes" style="font-size:0.85rem; color:var(--texte-blanc-doux); background:rgba(255,255,255,0.06); padding:10px; border-radius:12px; border:1px solid rgba(167,139,250,0.15); margin:0;"></p>
+
+      <!-- Section Historique des Commandes du Client -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1);">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:0.85rem; font-weight:800; color:var(--violet-300); text-transform:uppercase; letter-spacing:0.04em;">Historique des Commandes</span>
+          <span id="ficheClientCmdBadgeCount" class="badge badge-violet" style="font-size:0.7rem; padding:2px 8px;">0</span>
+        </div>
+        <button type="button" class="btn btn-outline-violet" style="font-size:0.75rem; min-height:28px; padding:0 10px;" id="btnNouvelleCmdDepuisFiche">
+          + Nouvelle commande
+        </button>
+      </div>
+
+      <!-- Résumé financier du client (Total, Versé, Reste dû) -->
+      <div id="ficheClientRecapFinancier" style="display:none; margin-top:8px;"></div>
+
+      <!-- Liste détaillée des commandes du client -->
+      <div id="ficheClientCommandesList" style="display:flex; flex-direction:column; gap:10px; margin-top:8px;"></div>
+
+      <!-- Actions de modification et suppression -->
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1);">
+        <button class="btn btn-primary" id="btnModifierClientFiche" style="min-height:44px; width:100%;">
+          ✏️ Modifier le client et ses mesures
+        </button>
+        <button class="btn btn-outline-violet" id="btnSupprimerClientFiche" style="min-height:36px; width:100%; color:#F87171; border-color:rgba(239,68,68,0.3);">
+          🗑️ Supprimer ce client
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3 : NOUVELLE COMMANDE & MODIFICATION (Section 8.3)
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalNouvelleCommande">
+    <div class="app-modal-card">
+      <div class="app-modal-header">
+        <h3 class="app-modal-title" id="titreModalCommande">Nouvelle Commande</h3>
+        <button class="app-modal-close-btn">&times;</button>
+      </div>
+
+      <form id="formNouvelleCommande" onsubmit="App.soumettreNouvelleCommande(event)">
+        <input type="hidden" id="commandeIdInput" value="">
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Client *</label>
+          <select id="commandeSelectClient" class="form-select" required style="background:rgba(30,17,71,0.9); color:#FFF; border-color:rgba(167,139,250,0.25);">
+            <!-- Rempli dynamiquement -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Type de vêtement *</label>
+          <input type="text" id="commandeVetementInput" class="form-input" placeholder="Ex: Robe de soirée, Costume 2 pièces, Boubou..." required style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Tissu &amp; Détails</label>
+          <input type="text" id="commandeTissuInput" class="form-input" placeholder="Ex: Pagne Wax 6 yards, Soie bleue, Lin blanc..." style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <div class="measurements-grid">
+          <div class="form-group">
+            <label class="form-label" style="color:var(--texte-blanc-doux);">Prix Total (FCFA) *</label>
+            <input type="number" id="commandePrixInput" class="form-input" placeholder="Ex: 25000" required style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+          </div>
+          <div class="form-group" id="groupCommandeAvance">
+            <label class="form-label" style="color:var(--texte-blanc-doux);">Avance reçue (FCFA)</label>
+            <input type="number" id="commandeAvanceInput" class="form-input" placeholder="Ex: 10000" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Date promise de livraison *</label>
+          <input type="date" id="commandeDateLivraison" class="form-input" required style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <button type="submit" id="btnSubmitCommande" class="btn btn-primary" style="width:100%; min-height:48px; margin-top:8px;">
+          Enregistrer la commande
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 4 : DÉTAIL COMMANDE (Section 8.3)
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalDetailCommande">
+    <div class="app-modal-card">
+      <div class="app-modal-header">
+        <div>
+          <h3 class="app-modal-title" id="detailCmdVetement">Commande</h3>
+          <div style="font-size:0.85rem; color:var(--violet-300);" id="detailCmdClient">Client</div>
+        </div>
+        <button class="app-modal-close-btn">&times;</button>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.06); padding:14px; border-radius:16px; font-size:0.88rem; display:flex; flex-direction:column; gap:8px; border:1px solid rgba(167,139,250,0.2);">
+        <div><strong style="color:var(--violet-300);">Tissu :</strong> <span id="detailCmdTissu" style="color:#FFF;">-</span></div>
+        <div><strong style="color:var(--violet-300);">Prix Total :</strong> <span id="detailCmdPrixTotal" style="color:#FFF; font-weight:700;">-</span></div>
+        <div><strong style="color:var(--violet-300);">Livraison promise :</strong> <span id="detailCmdDate" style="color:#FFF;">-</span></div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1);">
+          <span>Payé : <strong id="detailCmdPaye" style="color:#4ADE80;">0 F</strong></span>
+          <span>Reste à payer : <strong id="detailCmdReste" style="color:#F87171;">0 F</strong></span>
+        </div>
+      </div>
+
+      <!-- Changement de statut de confection d'un clic -->
+      <div class="form-group">
+        <label class="form-label" style="color:var(--texte-blanc-doux);">Statut de confection :</label>
+        <select id="detailCmdStatut" class="form-select" style="background:rgba(30,17,71,0.9); color:#FFF; border-color:rgba(167,139,250,0.3);">
+          <option value="recue">Reçue</option>
+          <option value="coupee">Coupée</option>
+          <option value="en_couture">En couture</option>
+          <option value="prete">Prête à être récupérée</option>
+          <option value="livree">Livrée &amp; terminée</option>
+        </select>
+      </div>
+
+      <!-- Actions de la commande -->
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn btn-primary" id="btnOuvrirAjoutPaiement" style="min-height:44px;">
+          + Enregistrer un versement / acompte
+        </button>
+
+        <button type="button" class="btn btn-secondary" id="btnOuvrirRecuCommande" style="justify-content:center; min-height:42px; background:rgba(124,58,237,0.22); border-color:rgba(167,139,250,0.35); color:#FFF;">
+          🧾 Reçu de commande (WhatsApp &amp; Imprimer)
+        </button>
+
+        <button type="button" class="btn btn-secondary" id="btnModifierCommandeDetail" style="justify-content:center; min-height:42px;">
+          ✏️ Modifier cette commande (prix, tissu, date)
+        </button>
+
+        <button type="button" class="btn btn-secondary" id="btnVoirMesuresClientCmd" style="justify-content:center; min-height:42px;">
+          📏 Voir les mesures de ce client
+        </button>
+
+        <a id="btnCommandePreteWA" href="#" target="_blank" class="btn-whatsapp-nudge" style="justify-content:center; min-height:44px;">
+          💬 Notifier sur WhatsApp : Commande prête !
+        </a>
+
+        <button type="button" class="btn btn-outline-violet" id="btnSupprimerCommandeDetail" style="justify-content:center; min-height:38px; color:#F87171; border-color:rgba(239,68,68,0.35); margin-top:4px;">
+          🗑️ Supprimer cette commande
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 5 : ENCAISSER UN VERSEMENT AVEC CALCUL AUTOMATIQUE DU SOLDE
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalAjoutPaiement">
+    <div class="app-modal-card" style="max-width: 440px;">
+      <div class="app-modal-header">
+        <h3 class="app-modal-title">Encaisser un versement</h3>
+        <button class="app-modal-close-btn">&times;</button>
+      </div>
+
+      <input type="hidden" id="paiementCommandeId" value="">
+
+      <!-- Récapitulatif commande -->
+      <div style="background:rgba(255,255,255,0.05); padding:14px; border-radius:16px; border:1px solid rgba(167,139,250,0.2); display:flex; flex-direction:column; gap:6px;">
+        <div style="font-weight:800; font-size:1rem; color:#FFF;" id="paiementCmdVetement">-</div>
+        <div style="font-size:0.85rem; color:var(--violet-300);" id="paiementCmdClient">-</div>
+        
+        <div style="display:flex; justify-content:space-between; margin-top:6px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); font-size:0.88rem;">
+          <span>Prix total : <strong id="paiementPrixTotal" style="color:#FFF;">0 F</strong></span>
+          <span>Déjà payé : <strong id="paiementDejaPaye" style="color:#4ADE80;">0 F</strong></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+          <span style="font-size:0.9rem; font-weight:700; color:var(--violet-300);">Reste dû actuel :</span>
+          <span id="paiementResteDu" style="font-size:1.15rem; font-weight:800; color:#F87171;">0 F</span>
+        </div>
+      </div>
+
+      <form id="formAjoutPaiement" onsubmit="App.soumettreAjoutPaiement(event)">
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Montant à encaisser (FCFA) *</label>
+          <input type="number" id="paiementMontantInput" class="form-input" placeholder="Ex: 5000" required min="100" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.3); font-size:1.15rem; font-weight:700;">
+        </div>
+
+        <!-- Raccourcis de montants rapides -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+          <button type="button" class="filter-pill" onclick="App.remplirMontantPaiement('solde')">Solder tout</button>
+          <button type="button" class="filter-pill" onclick="App.remplirMontantPaiement(5000)">5 000 F</button>
+          <button type="button" class="filter-pill" onclick="App.remplirMontantPaiement(10000)">10 000 F</button>
+          <button type="button" class="filter-pill" onclick="App.remplirMontantPaiement(20000)">20 000 F</button>
+        </div>
+
+        <!-- Calcul dynamique en direct du nouveau solde restant -->
+        <div style="background:rgba(30,17,71,0.7); border:1px solid rgba(167,139,250,0.25); border-radius:14px; padding:12px 14px; font-size:0.88rem; display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:var(--violet-300);">Nouveau reste après encaissement :</span>
+          <strong id="paiementNouveauSoldeValeur" style="color:#FFF; font-size:1rem;">-</strong>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; min-height:48px; margin-top:14px;">
+          ✓ Confirmer l'encaissement
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 6 : NOUVELLE DÉPENSE D'ATELIER
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalNouvelleDepense">
+    <div class="app-modal-card" style="max-width: 440px;">
+      <div class="app-modal-header">
+        <h3 class="app-modal-title">Nouvelle Dépense d'Atelier</h3>
+        <button class="app-modal-close-btn">&times;</button>
+      </div>
+
+      <form id="formNouvelleDepense" onsubmit="App.soumettreNouvelleDepense(event)">
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Montant dépensé (FCFA) *</label>
+          <input type="number" id="depenseMontantInput" class="form-input" placeholder="Ex: 3500" required min="50" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.3); font-size:1.15rem; font-weight:700;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Catégorie de dépense *</label>
+          <select id="depenseCategorieSelect" class="form-select" required style="background:rgba(30,17,71,0.95); color:#FFF; border-color:rgba(167,139,250,0.3);">
+            <option value="Fils &amp; Mercerie">🧵 Fils &amp; Mercerie (boutons, fermetures...)</option>
+            <option value="Tissus &amp; Doublures">✂️ Tissus &amp; Doublures</option>
+            <option value="Aiguilles &amp; Entretien">🪡 Aiguilles, Huile &amp; Réparation machine</option>
+            <option value="Électricité &amp; Carburant">⚡ Électricité &amp; Carburant (groupe)</option>
+            <option value="Loyer Atelier">🏠 Loyer de l'atelier</option>
+            <option value="Transport &amp; Courses">🛵 Transport &amp; Courses atelier</option>
+            <option value="Alimentation Atelier">🍱 Pause / Repas atelier</option>
+            <option value="Autre dépense">📦 Autre dépense diverse</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Détail ou Note (facultatif)</label>
+          <input type="text" id="depenseNoteInput" class="form-input" placeholder="Ex: 5 bobines fil noir + 4 fermetures dorées" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--texte-blanc-doux);">Date de la dépense *</label>
+          <input type="date" id="depenseDateInput" class="form-input" required style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; min-height:48px; margin-top:10px;">
+          ✓ Enregistrer la dépense
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 7 : REÇU DE COMMANDE (WHATSAPP & IMPRIMABLE)
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalRecuCommande">
+    <div class="app-modal-card" style="max-width: 480px;">
+      <div class="app-modal-header">
+        <h3 class="app-modal-title">Reçu de Confection</h3>
+        <button class="app-modal-close-btn">&times;</button>
+      </div>
+
+      <!-- Ticket officiel imprimable -->
+      <div class="receipt-ticket-card" id="printableReceiptCard">
+        <div class="receipt-header-brand">
+          <div class="receipt-ticket-ref" id="recuNumeroTicket">REÇU N° CMD-000000</div>
+          <div class="receipt-atelier-name" id="recuNomAtelier">Mon Atelier</div>
+          <div class="receipt-atelier-sub" id="recuAtelierContact">Atelier de Couture &amp; Stylisme</div>
+          <div class="receipt-atelier-sub" id="recuDateEmission">Date : 08/11/2026</div>
+        </div>
+
+        <div class="receipt-body-rows">
+          <div class="receipt-row-item">
+            <span class="receipt-row-label">Client :</span>
+            <span class="receipt-row-value" id="recuNomClient">-</span>
+          </div>
+          <div class="receipt-row-item">
+            <span class="receipt-row-label">Téléphone :</span>
+            <span class="receipt-row-value" id="recuTelClient">-</span>
+          </div>
+          <div class="receipt-row-item">
+            <span class="receipt-row-label">Modèle / Vêtement :</span>
+            <span class="receipt-row-value" id="recuVetement">-</span>
+          </div>
+          <div class="receipt-row-item">
+            <span class="receipt-row-label">Tissu &amp; Fournitures :</span>
+            <span class="receipt-row-value" id="recuTissu">-</span>
+          </div>
+          <div class="receipt-row-item">
+            <span class="receipt-row-label">Livraison promise :</span>
+            <span class="receipt-row-value" id="recuDateLivraison" style="color:#C4B5FD;">-</span>
+          </div>
+          <div class="receipt-row-item">
+            <span class="receipt-row-label">Statut confection :</span>
+            <span class="receipt-row-value" id="recuStatut">-</span>
+          </div>
+        </div>
+
+        <div class="receipt-financial-box">
+          <div class="receipt-fin-row">
+            <span style="color:var(--violet-300);">Montant total convenu :</span>
+            <strong id="recuPrixTotal" style="color:#FFF; font-size:1rem;">0 FCFA</strong>
+          </div>
+          <div class="receipt-fin-row">
+            <span style="color:#4ADE80;">Acompte / Versements reçus :</span>
+            <strong id="recuDejaPaye" style="color:#4ADE80; font-size:1rem;">0 FCFA</strong>
+          </div>
+          <div class="receipt-fin-row receipt-fin-total">
+            <span style="font-weight:700; color:var(--violet-300);">Reste à régler à la livraison :</span>
+            <strong id="recuResteDu" style="font-size:1.15rem; font-weight:800; color:#F87171;">0 FCFA</strong>
+          </div>
+        </div>
+
+        <div class="receipt-footer-mention">
+          Merci pour votre confiance ! Confection sur-mesure garantie.
+        </div>
+      </div>
+
+      <!-- Boutons d'actions rapides -->
+      <div class="receipt-actions-panel" style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <a id="btnPartagerRecuWA" href="#" target="_blank" class="btn-whatsapp-nudge" style="justify-content:center; min-height:46px; font-weight:700;">
+          💬 Envoyer ce reçu sur WhatsApp
+        </a>
+
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-secondary" onclick="App.copierRecuTexte()" style="flex:1; justify-content:center; min-height:44px;">
+            📋 Copier le reçu
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="App.imprimerRecu()" style="flex:1; justify-content:center; min-height:44px;">
+            🖨️ Imprimer / PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 7 : PÉRIODE D'ESSAI EXPIRÉE / ABONNEMENT REQUIS (Mission 2)
+       ======================================================================== -->
+  <div class="app-modal-overlay" id="modalEssaiExpire">
+    <div class="app-modal-card" style="text-align: center; max-width: 440px;">
+      <div style="font-size: 2.8rem; margin-bottom: 6px;">🔒</div>
+      <h3 class="app-modal-title" style="justify-content: center; font-size: 1.25rem; color: #FFFFFF;" id="titreModalEssaiExpire">
+        Période d'essai terminée
+      </h3>
+      <p style="font-size: 0.9rem; color: var(--texte-blanc-doux); line-height: 1.5; margin: 12px 0 16px 0;" id="msgModalEssaiExpire">
+        Votre période d'essai gratuit de 15 jours est arrivée à expiration.<br><br>
+        Pour continuer à enregistrer vos clients, commandes, paiements et dépenses, activez votre formule d'abonnement.
+      </p>
+
+      <!-- Tarifs express rappel -->
+      <div style="background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 14px; padding: 12px; margin-bottom: 16px; text-align: left; font-size: 0.82rem; color: var(--lavande-200);">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>👤 Un Tailleur :</span>
+          <strong style="color: #FFF;">2 600 FCFA / mois</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>👥 Atelier (Équipe &amp; Apprentis) :</span>
+          <strong style="color: #FBBF24;">5 100 FCFA / mois</strong>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <a href="abonnement.html" class="btn btn-primary" style="justify-content: center; min-height: 46px; font-weight: 700; text-decoration: none;">
+          ⭐ Activer mon abonnement maintenant
+        </a>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalEssaiExpire')?.classList.remove('active')" style="min-height: 40px; justify-content: center;">
+          Consulter mes anciennes données (Lecture seule)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification globale -->
+  <div class="toast-notification" id="globalToast" role="status">Notification</div>
+
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
   <script src="js/pays.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Garde de route obligatoire (Section 7.7)
-      const session = await Auth.protegerRoute();
-      if (!session) return;
-
-      // 2. Affichage des infos utilisateur
-      const user = session.user;
-      const meta = user.user_metadata || {};
-      const prenom = meta.prenom || 'Tailleur';
-      const atelier = meta.atelier || 'Mon Atelier';
-
-      const userNameDisplay = document.getElementById('userNameDisplay');
-      const userAtelierDisplay = document.getElementById('userAtelierDisplay');
-      if (userNameDisplay) userNameDisplay.textContent = `Bonjour, ${prenom} 👋`;
-      if (userAtelierDisplay) userAtelierDisplay.textContent = atelier;
-
-      // 3. Déconnexion
-      document.getElementById('btnDeconnexion')?.addEventListener('click', async () => {
-        if (confirm("Voulez-vous vous déconnecter de votre atelier ?")) {
-          await Auth.deconnecter();
-        }
-      });
-
-      // 4. Onboarding de bienvenue en 3 étapes si première inscription (Section 7.4)
-      const estNouveau = sessionStorage.getItem('tailleurpro_bienvenue_nouveau') === 'true';
-      const welcomeModal = document.getElementById('welcomeModal');
-      const btnFermer = document.getElementById('btnFermerBienvenue');
-
-      if (estNouveau && welcomeModal) {
-        welcomeModal.classList.add('active');
-        btnFermer?.addEventListener('click', () => {
-          welcomeModal.classList.remove('active');
-          sessionStorage.removeItem('tailleurpro_bienvenue_nouveau');
-        });
-      }
-    });
-  </script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
