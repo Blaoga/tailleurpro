@@ -505,8 +505,176 @@ body.landing-page p {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 12px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.hero-actions .btn-hero-cta {
+  min-height: 44px;
+  padding: 0 24px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  box-shadow: 0 8px 24px -4px rgba(182, 92, 255, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+}
+
+.hero-actions .btn-hero-cta:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px -4px rgba(182, 92, 255, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+}
+
+/* ==========================================================================
+   PREUVE SOCIALE : 5 000+ UTILISATEURS & 4 PROFILS AFRICAINS
+   ========================================================================== */
+.hero-social-proof {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  margin-bottom: 4px;
+}
+
+@media (min-width: 480px) {
+  .hero-social-proof {
+    flex-direction: row;
+    gap: 12px;
+  }
+}
+
+.social-proof-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.social-avatar-bubble {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #080D29;
+  margin-left: -9px;
+  overflow: hidden;
+  background: #1B224B;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  display: inline-block;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, z-index 0.2s ease;
+}
+
+.social-avatar-bubble:first-child {
+  margin-left: 0;
+}
+
+.social-avatar-bubble:hover {
+  transform: translateY(-3px) scale(1.15);
+  z-index: 10;
+}
+
+.social-avatar-bubble svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.social-proof-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+@media (min-width: 480px) {
+  .social-proof-meta {
+    align-items: flex-start;
+  }
+}
+
+.proof-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: #F59E0B;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
+}
+
+.proof-count-text {
+  font-size: 0.78rem;
+  color: var(--tp-muted);
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.proof-highlight {
+  font-weight: 800;
+  color: var(--tp-white);
+  margin-right: 3px;
+}
+
+/* ==========================================================================
+   LIGNE DÉFILANTE DES MOTS COUTURE (TICKER MARQUEE INFINI MOBILE)
+   ========================================================================== */
+.ticker-ribbon {
+  width: 100%;
+  overflow: hidden;
+  background: rgba(14, 20, 56, 0.82);
+  border-top: 1px solid rgba(182, 92, 255, 0.2);
+  border-bottom: 1px solid rgba(182, 92, 255, 0.2);
+  padding: 13px 0;
+  position: relative;
+  z-index: 6;
+  margin: 28px 0 8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: max-content;
+  animation: tickerMarquee 32s linear infinite;
+  will-change: transform;
+}
+
+.ticker-ribbon:hover .ticker-track,
+.ticker-ribbon:active .ticker-track {
+  animation-play-state: paused;
+}
+
+.ticker-item {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #E2E8F0;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ticker-spark {
+  color: #F59E0B;
+  font-size: 0.82rem;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.65);
+  display: inline-block;
+  user-select: none;
+}
+
+@keyframes tickerMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+    transform: none;
+    overflow-x: auto;
+    width: 100%;
+  }
 }
 
 .hero-reassurance {

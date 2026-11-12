@@ -31,6 +31,12 @@ export const PLANS: Record<string, SaspayPlan> = {
 
 export const DEVISE_PAR_PAYS: Record<string, string> = {
   CM: "XAF", // Cameroun
+  CG: "XAF", // Congo-Brazzaville
+  CD: "CDF", // République Démocratique du Congo
+  GA: "XAF", // Gabon
+  CF: "XAF", // République Centrafricaine
+  RW: "RWF", // Rwanda
+  BI: "BIF", // Burundi
   CI: "XOF", // Côte d'Ivoire
   SN: "XOF", // Sénégal
   BJ: "XOF", // Bénin
@@ -38,7 +44,6 @@ export const DEVISE_PAR_PAYS: Record<string, string> = {
   BF: "XOF", // Burkina Faso
   ML: "XOF", // Mali
   NE: "XOF", // Niger
-  CD: "CDF", // RDC
   GN: "GNF", // Guinée
 };
 
@@ -150,6 +155,36 @@ export async function initierPaiementSoftpay(
   return data?.data || data;
 }
 
+function extraireErreurSaspay(data: unknown, status: number): string {
+  if (!data || typeof data !== "object") {
+    return `Erreur SasPay HTTP ${status}`;
+  }
+  const obj = data as Record<string, unknown>;
+  const nestedErr = obj.error && typeof obj.error === "object"
+    ? (obj.error as Record<string, unknown>)
+    : null;
+  const directMsg =
+    (typeof nestedErr?.message === "string" && nestedErr.message) ||
+    (typeof obj.message === "string" && obj.message) ||
+    (typeof obj.detail === "string" && obj.detail);
+  if (directMsg) return directMsg;
+
+  const detailsObj =
+    nestedErr?.details && typeof nestedErr.details === "object"
+      ? (nestedErr.details as Record<string, unknown>)
+      : obj;
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(detailsObj)) {
+    if (k === "code" || k === "status") continue;
+    if (Array.isArray(v) && v.length > 0) {
+      parts.push(`${k}: ${v.join(", ")}`);
+    } else if (typeof v === "string" && v.trim()) {
+      parts.push(`${k}: ${v}`);
+    }
+  }
+  return parts.length > 0 ? parts.join(" | ") : `Erreur SasPay HTTP ${status}`;
+}
+
 // ----------------------------------------------------------------------------
 // 3. CHECKOUT HÉBERGÉ : CRÉER UNE SESSION (POST /checkout-sessions/)
 // ----------------------------------------------------------------------------
@@ -168,20 +203,38 @@ export async function creerSessionCheckout(
   }
 ) {
   const url = `${SASPAY_BASE_URL}/checkout-sessions/`;
+  const payload: Record<string, unknown> = {
+    amount: params.amount,
+    currency: params.currency,
+    customer_email: params.customer_email,
+    customer_name: params.customer_name,
+    description: params.description,
+    metadata: params.metadata,
+  };
+  if (params.customer_phone && params.customer_phone.trim()) {
+    payload.customer_phone = params.customer_phone.trim();
+  }
+  if (params.country && params.country.trim()) {
+    payload.country = params.country.trim().toUpperCase();
+  }
+  if (params.return_url && params.return_url.trim()) {
+    payload.return_url = params.return_url.trim();
+  }
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(params),
+    body: JSON.stringify(payload),
   });
 
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const errorMsg = data?.error?.message || data?.message || `Erreur SasPay HTTP ${response.status}`;
-    const errorCode = data?.error?.code || `http_${response.status}`;
+    const errorMsg = extraireErreurSaspay(data, response.status);
+    const errorCode = (data as Record<string, Record<string, unknown>>)?.error?.code || `http_${response.status}`;
     throw new Error(JSON.stringify({ message: errorMsg, code: errorCode, status: response.status }));
   }
 
