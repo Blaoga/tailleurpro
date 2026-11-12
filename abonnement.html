@@ -3,203 +3,512 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Abonnement & Paiement | Tailleur Pro</title>
-  <meta name="theme-color" content="#120B2E">
+  <title>Abonnement &amp; Paiement | Tailleur Pro</title>
+  <meta name="theme-color" content="#080D29">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/app.css">
-  <link rel="stylesheet" href="css/auth.css">
   <style>
-    .network-badge {
+    :root {
+      color-scheme: dark;
+    }
+
+    body.pay-page {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(120, 56, 216, 0.28) 0%, rgba(8, 13, 41, 0) 58%),
+        var(--tp-night, #080D29);
+      color: var(--tp-white, #FFFFFF);
+      font-family: var(--font-sans, 'Inter', system-ui, -apple-system, sans-serif);
+      padding: 16px 14px 44px;
+      box-sizing: border-box;
+    }
+
+    .pay-shell {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .pay-topbar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border: 1.5px solid var(--bordure);
-      border-radius: var(--radius-md);
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .pay-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 9999px;
+      background: rgba(17, 24, 61, 0.72);
+      border: 1px solid rgba(200, 201, 220, 0.14);
+      color: #FFFFFF;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .pay-back-link:hover {
+      background: rgba(25, 34, 82, 0.9);
+      border-color: rgba(182, 92, 255, 0.35);
+    }
+
+    .pay-security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 9999px;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.26);
+      color: #6EE7B7;
+      font-size: 0.71rem;
+      font-weight: 700;
+    }
+
+    .pay-card-main {
+      background: rgba(17, 24, 61, 0.72);
+      border: 1px solid rgba(200, 201, 220, 0.14);
+      border-radius: 20px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.36);
+    }
+
+    .pay-hero {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      text-align: center;
+    }
+
+    .pay-eyebrow {
+      align-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(120, 56, 216, 0.2);
+      border: 1px solid rgba(182, 92, 255, 0.34);
+      color: #E2C6FF;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .pay-hero h1 {
+      margin: 0;
+      font-size: 1.32rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .pay-hero p {
+      margin: 0;
+      font-size: 0.81rem;
+      line-height: 1.48;
+      color: #C8C9DC;
+    }
+
+    .pay-arguments-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .pay-arg-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 4px;
+      padding: 9px 6px;
+      border-radius: 12px;
+      background: rgba(8, 13, 41, 0.56);
+      border: 1px solid rgba(200, 201, 220, 0.1);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #C8C9DC;
+      line-height: 1.25;
+    }
+
+    .pay-arg-pill svg {
+      color: #B65CFF;
+      flex-shrink: 0;
+    }
+
+    .pay-plans-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .pay-plan-card {
+      position: relative;
+      background: rgba(8, 13, 41, 0.66);
+      border: 1.5px solid rgba(200, 201, 220, 0.14);
+      border-radius: 18px;
+      padding: 18px 14px 14px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .pay-plan-card:hover {
+      border-color: rgba(182, 92, 255, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .pay-plan-card.active {
+      background: linear-gradient(160deg, rgba(120, 56, 216, 0.24) 0%, rgba(17, 24, 61, 0.94) 100%);
+      border-color: #B65CFF;
+      box-shadow: 0 0 0 1px rgba(182, 92, 255, 0.45), 0 14px 28px rgba(120, 56, 216, 0.22);
+    }
+
+    .pay-plan-head {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pay-plan-badge {
+      position: absolute;
+      top: -10px;
+      right: 12px;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7838D8 0%, #B65CFF 100%);
+      color: #FFFFFF;
+      font-size: 0.61rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(120, 56, 216, 0.4);
+    }
+
+    .pay-plan-tier {
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #DFC0FF;
+    }
+
+    .pay-plan-price {
+      font-size: 1.48rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .pay-plan-price span {
+      font-size: 0.74rem;
+      font-weight: 500;
+      color: #8F93B4;
+    }
+
+    .pay-plan-desc {
+      font-size: 0.73rem;
+      color: #C8C9DC;
+      line-height: 1.38;
+    }
+
+    .pay-plan-cta {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: linear-gradient(135deg, #7838D8 0%, #B65CFF 100%);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 0.83rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       cursor: pointer;
-      background: white;
-      transition: all 0.2s ease;
-      font-size: 0.88rem;
+      box-shadow: 0 10px 22px rgba(120, 56, 216, 0.3);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
+    .pay-plan-card:not(.active) .pay-plan-cta {
+      background: rgba(120, 56, 216, 0.24);
+      border-color: rgba(182, 92, 255, 0.42);
+      box-shadow: none;
+    }
+
+    .pay-plan-cta:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(120, 56, 216, 0.38);
+    }
+
+    .pay-plan-cta:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .pay-direct-hint {
+      text-align: center;
+      font-size: 0.74rem;
+      color: #8F93B4;
+      line-height: 1.45;
+      margin: -4px 0 0;
+    }
+
+    .auth-alert-message {
+      padding: 11px 13px;
+      border-radius: 12px;
+      font-size: 0.81rem;
+      line-height: 1.45;
+      background: rgba(120, 56, 216, 0.14);
+      border: 1px solid rgba(182, 92, 255, 0.3);
+      color: #FFFFFF;
+    }
+
+    .auth-alert-message:empty {
+      display: none;
+    }
+
+    .auth-alert-message.error {
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(248, 113, 113, 0.35);
+      color: #FCA5A5;
+    }
+
+    .auth-alert-message.success {
+      background: rgba(52, 211, 153, 0.14);
+      border-color: rgba(52, 211, 153, 0.35);
+      color: #6EE7B7;
+    }
+
+    .pay-footer-links {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.74rem;
+      color: #8F93B4;
+    }
+
+    .pay-footer-links a {
+      color: #DFC0FF;
+      text-decoration: none;
       font-weight: 600;
     }
-    .network-badge:hover {
-      border-color: var(--violet-600);
-      background: var(--lavande-50);
+
+    .pay-footer-links a:hover {
+      text-decoration: underline;
     }
-    .network-badge.active {
-      border-color: var(--violet-600);
-      background: var(--lavande-100);
-      color: var(--violet-950);
-      box-shadow: 0 0 0 1px var(--violet-600);
-    }
+
+    /* Modale d'attente Mobile Money (Dark Midnight) */
     .payment-modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(18, 11, 46, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(4, 7, 24, 0.8);
+      backdrop-filter: blur(6px);
       z-index: 1000;
       align-items: center;
       justify-content: center;
       padding: 16px;
     }
+
     .payment-modal.active {
       display: flex;
     }
+
     .payment-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      max-width: 440px;
+      background: #11183D;
+      border: 1px solid rgba(182, 92, 255, 0.34);
+      border-radius: 20px;
+      padding: 24px 20px;
+      max-width: 420px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.52);
       animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     @keyframes popIn {
       from { transform: scale(0.95); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
+
     .pulse-ring {
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background: var(--lavande-100);
+      background: rgba(120, 56, 216, 0.22);
+      border: 1px solid rgba(182, 92, 255, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 16px;
       position: relative;
+      color: #DFC0FF;
     }
+
     .pulse-ring::before {
       content: "";
       position: absolute;
       inset: -6px;
       border-radius: 50%;
-      border: 2px solid var(--violet-600);
+      border: 2px solid #B65CFF;
       animation: pulse 1.8s infinite;
     }
+
     @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.15); opacity: 0; }
+      0% { transform: scale(0.95); opacity: 0.85; }
+      50% { transform: scale(1.16); opacity: 0; }
       100% { transform: scale(0.95); opacity: 0; }
+    }
+
+    .pay-modal-title {
+      margin: 0 0 8px;
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .pay-modal-message {
+      margin: 0 0 14px;
+      font-size: 0.84rem;
+      line-height: 1.5;
+      color: #C8C9DC;
+    }
+
+    .pay-modal-status-box {
+      background: rgba(8, 13, 41, 0.72);
+      border: 1px solid rgba(200, 201, 220, 0.14);
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      color: #FFFFFF;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .pay-modal-cancel-btn {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 9999px;
+      background: rgba(8, 13, 41, 0.76);
+      border: 1px solid rgba(200, 201, 220, 0.22);
+      color: #C8C9DC;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .pay-modal-cancel-btn:hover {
+      background: rgba(25, 34, 82, 0.9);
+      border-color: rgba(182, 92, 255, 0.45);
+      color: #FFFFFF;
+    }
+
+    @media (max-width: 480px) {
+      .pay-arguments-strip {
+        grid-template-columns: 1fr;
+      }
+      .pay-plans-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
-<body class="auth-page" style="justify-content: flex-start; padding-top: var(--space-6);">
-  <div class="auth-card" style="max-width: 520px;">
-    <div class="auth-header">
-      <div class="badge badge-violet" style="margin-bottom: 8px;">Abonnement Professionnel</div>
-      <h1 class="auth-title">Poursuivez avec Tailleur Pro</h1>
-      <p class="auth-subtitle">0 FCFA pendant 15 jours d'essai, puis choisissez votre formule :</p>
+<body class="pay-page">
+  <main class="pay-shell">
+    <div class="pay-topbar">
+      <a href="app.html" class="pay-back-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Retour atelier</span>
+      </a>
+      <span class="pay-security-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Paiement sécurisé
+      </span>
     </div>
 
-    <!-- Sélecteur de Formules d'Abonnement -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: var(--space-4);">
-      <!-- Option 1 : Un Tailleur -->
-      <label id="cardPlanSolo" style="cursor: pointer; background: var(--lavande-100); border: 2px solid var(--violet-600); border-radius: var(--radius-carte); padding: 14px 10px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
-        <input type="radio" name="planOption" value="solo" checked style="display: none;" onchange="changerPlan('solo')">
-        <div style="font-size: 0.75rem; font-weight: 800; color: var(--violet-600);">UN TAILLEUR</div>
-        <div style="font-size: 1.45rem; font-weight: 800; color: var(--violet-950); margin: 4px 0;">2 600 F<span style="font-size: 0.72rem; font-weight: 500; color: var(--texte-doux);">/mois</span></div>
-        <div style="font-size: 0.72rem; color: var(--texte-doux);">Artisan solo</div>
-      </label>
+    <section class="pay-card-main">
+      <header class="pay-hero">
+        <span class="pay-eyebrow">Tailleur Pro · Mode Illimité</span>
+        <h1>Sécurisez votre atelier en 30 secondes</h1>
+        <p>Gardez tous vos clients, mesures libres, reçus et relances de paiement sans limite ni interruption.</p>
+      </header>
 
-      <!-- Option 2 : Atelier -->
-      <label id="cardPlanAtelier" style="cursor: pointer; background: white; border: 2px solid rgba(124, 58, 237, 0.2); border-radius: var(--radius-carte); padding: 14px 10px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: all 0.2s ease;">
-        <span style="position: absolute; top: -10px; right: 8px; background: #22C55E; color: #FFFFFF; font-size: 0.62rem; font-weight: 800; padding: 3px 8px; border-radius: 10px; border: 1.5px solid #FFFFFF; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.35); z-index: 2;">⭐ RECOMMANDÉ</span>
-        <input type="radio" name="planOption" value="atelier" style="display: none;" onchange="changerPlan('atelier')">
-        <div style="font-size: 0.75rem; font-weight: 800; color: #D97706;">ATELIER</div>
-        <div style="font-size: 1.45rem; font-weight: 800; color: var(--violet-950); margin: 4px 0;">5 100 F<span style="font-size: 0.72rem; font-weight: 500; color: var(--texte-doux);">/mois</span></div>
-        <div style="font-size: 0.72rem; color: var(--texte-doux);">Équipe &amp; Apprentis</div>
-      </label>
-    </div>
-
-    <!-- Récapitulatif Tarif Actif -->
-    <div style="background: var(--lavande-50); border-radius: var(--radius-carte); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); border: 1px solid rgba(124, 58, 237, 0.25); text-align: center;">
-      <div style="font-size: 0.82rem; color: var(--texte-doux); font-weight: 600;" id="labelRecapPlan">FORMULE SÉLECTIONNÉE : UN TAILLEUR</div>
-      <div style="font-size: 1.8rem; font-weight: 800; color: var(--violet-600); margin: 4px 0;" id="montantRecapGrand">2 600 FCFA <span style="font-size: 0.9rem; font-weight: 500; color: var(--texte-doux);">/ mois</span></div>
-      <p style="font-size: 0.8rem; color: var(--texte-doux); margin: 0;">Sans engagement · Activé pour 30 jours consécutifs dès confirmation</p>
-    </div>
-
-    <div id="demandeAlert" class="auth-alert-message" role="alert"></div>
-
-    <!-- Formulaire de Paiement SasPay Automatisé -->
-    <form id="formPaiementSaspay">
-      <!-- Choix du Pays -->
-      <div class="form-group">
-        <label for="selectPays" class="form-label">Pays de paiement :</label>
-        <select id="selectPays" class="form-input" onchange="rafraichirReseaux()">
-          <option value="CM" selected>🇨🇲 Cameroun (XAF)</option>
-          <option value="CI">🇨🇮 Côte d'Ivoire (XOF)</option>
-          <option value="SN">🇸🇳 Sénégal (XOF)</option>
-          <option value="BJ">🇧🇯 Bénin (XOF)</option>
-          <option value="TG">🇹🇬 Togo (XOF)</option>
-          <option value="BF">🇧🇫 Burkina Faso (XOF)</option>
-          <option value="ML">🇲🇱 Mali (XOF)</option>
-          <option value="XX">💳 Carte bancaire internationale (Visa/Mastercard)</option>
-        </select>
-      </div>
-
-      <!-- Choix du Réseau Mobile Money -->
-      <div class="form-group" id="groupReseaux">
-        <label class="form-label">Opérateur / Moyen de paiement :</label>
-        <div id="containerReseaux" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <!-- Injecté dynamiquement par JS -->
+      <div class="pay-arguments-strip">
+        <div class="pay-arg-pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Clients &amp; mesures illimités</span>
+        </div>
+        <div class="pay-arg-pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Rappels auto &amp; reçus WhatsApp</span>
+        </div>
+        <div class="pay-arg-pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>30 jours · Sans engagement</span>
         </div>
       </div>
 
-      <!-- Numéro de Téléphone Mobile Money -->
-      <div class="form-group" id="groupPhone">
-        <label for="inputTelephone" class="form-label">Numéro de téléphone à débiter :</label>
-        <div style="display: flex; gap: 8px;">
-          <span id="prefixePays" style="display: flex; align-items: center; padding: 0 12px; background: var(--lavande-50); border: 1px solid var(--bordure); border-radius: var(--radius-md); font-weight: 700; color: var(--violet-950);">+237</span>
-          <input type="tel" id="inputTelephone" class="form-input" placeholder="6 70 00 00 00" required>
-        </div>
-        <p style="font-size: 0.75rem; color: var(--texte-doux); margin-top: 4px;">Le réseau vous enverra une demande USSD sur ce téléphone pour saisir votre code secret.</p>
+      <!-- Choix direct de la formule : 1 clic = redirection SasPay -->
+      <div class="pay-plans-grid">
+        <article id="cardPlanSolo" class="pay-plan-card" style="cursor: pointer;" onclick="lancerPaiementDirect('solo', document.getElementById('btnPayerSolo'))">
+          <div class="pay-plan-head">
+            <div class="pay-plan-tier">Solo</div>
+            <div class="pay-plan-price">2 600 F<span>/mois</span></div>
+            <div class="pay-plan-desc">Tailleur indépendant · Clients, mesures &amp; reçus illimités</div>
+          </div>
+          <button type="button" id="btnPayerSolo" class="pay-plan-cta" onclick="event.stopPropagation(); lancerPaiementDirect('solo', this)">
+            <span>Choisir Solo</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </article>
+
+        <article id="cardPlanAtelier" class="pay-plan-card active" style="cursor: pointer;" onclick="lancerPaiementDirect('atelier', document.getElementById('btnPayerAtelier'))">
+          <span class="pay-plan-badge">Recommandé</span>
+          <div class="pay-plan-head">
+            <div class="pay-plan-tier">Atelier</div>
+            <div class="pay-plan-price">5 100 F<span>/mois</span></div>
+            <div class="pay-plan-desc">Équipe &amp; grand volume · Suivi avancé et assistance prioritaire</div>
+          </div>
+          <button type="button" id="btnPayerAtelier" class="pay-plan-cta" onclick="event.stopPropagation(); lancerPaiementDirect('atelier', this)">
+            <span>Choisir Atelier</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </article>
       </div>
 
-      <!-- Mode de paiement : Push direct vs Page hébergée -->
-      <div class="form-group" style="margin-bottom: var(--space-4);">
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--texte-doux); cursor: pointer;">
-          <input type="checkbox" id="checkCheckoutHeberge" onchange="toggleModeHeberge()">
-          <span>Payer via la page sécurisée SasPay (carte bancaire ou si le push ne passe pas)</span>
-        </label>
+      <p class="pay-direct-hint">Un clic sur votre forfait vous redirige directement vers la page de paiement SasPay (Mobile Money, Wave ou Carte).</p>
+
+      <div id="demandeAlert" class="auth-alert-message" role="alert"></div>
+
+      <div class="pay-footer-links">
+        <div>Paiement 100 % chiffré via <strong style="color: #DFC0FF;">SasPay</strong> &middot; <a href="https://wa.me/237600000000" target="_blank" rel="noopener noreferrer">Contacter le support</a></div>
       </div>
-
-      <button type="submit" class="btn btn-primary" id="btnPayer" style="width: 100%; padding: 14px; font-size: 1rem; font-weight: 700;">
-        <span id="btnPayerText">Payer 2 600 FCFA</span>
-      </button>
-    </form>
-
-    <div class="auth-footer-links" style="margin-top: var(--space-4);">
-      <div><a href="app.html">← Retourner à mon atelier</a></div>
-      <div>Paiements sécurisés par <strong style="color: var(--violet-600);">SasPay</strong> · <a href="https://wa.me/237600000000" target="_blank">Support</a></div>
-    </div>
-  </div>
-
-  <!-- MODALE D'ATTENTE PUSH MOBILE MONEY -->
-  <div id="modalAttentePaiement" class="payment-modal">
-    <div class="payment-card">
-      <div class="pulse-ring">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-          <line x1="12" y1="18" x2="12.01" y2="18"></line>
-        </svg>
-      </div>
-      <h3 style="font-size: 1.15rem; color: var(--violet-950); margin-bottom: 8px;" id="modalTitre">Vérifiez votre téléphone</h3>
-      <p style="font-size: 0.88rem; color: var(--texte-doux); margin-bottom: 16px;" id="modalMessage">
-        Une demande de paiement Mobile Money a été envoyée sur votre mobile. Saisissez votre code PIN secret pour confirmer.
-      </p>
-
-      <div style="background: var(--lavande-50); padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; color: var(--violet-950); font-weight: 600; margin-bottom: 16px;">
-        Statut : <span id="modalStatutLive" style="color: #D97706;">En attente de validation...</span>
-      </div>
-
-      <button type="button" class="btn btn-outline" style="width: 100%;" onclick="fermerModaleAttente()">
-        Annuler ou changer de numéro
-      </button>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/env.local.js"></script>
@@ -209,149 +518,93 @@
   <script src="js/auth.js"></script>
   <script src="js/saspay.js"></script>
   <script>
-    let planActif = 'solo';
-    let montantActif = 2600;
-    let reseauActif = 'mtn_cm';
-    let arreterPollingActuel = null;
+    let _sessionCourante = null;
+    let _paiementEnCours = false;
 
-    // Référentiel des réseaux par pays officiellement documentés par SasPay
-    const RESEAUX_PAR_PAYS = {
-      CM: [
-        { code: 'mtn_cm', nom: 'MTN Mobile Money', indicatif: '+237' },
-        { code: 'orange_cm', nom: 'Orange Money', indicatif: '+237' }
-      ],
-      CI: [
-        { code: 'wave_ci', nom: 'Wave Côte d\'Ivoire', indicatif: '+225' },
-        { code: 'orange_ci', nom: 'Orange Money CI', indicatif: '+225' },
-        { code: 'mtn_ci', nom: 'MTN MoMo CI', indicatif: '+225' },
-        { code: 'moov_ci', nom: 'Moov Money CI', indicatif: '+225' }
-      ],
-      SN: [
-        { code: 'wave_sn', nom: 'Wave Sénégal', indicatif: '+221' },
-        { code: 'orange_sn', nom: 'Orange Money SN', indicatif: '+221' },
-        { code: 'freemoney_sn', nom: 'Free Money SN', indicatif: '+221' }
-      ],
-      BJ: [
-        { code: 'mtn_bj', nom: 'MTN MoMo Bénin', indicatif: '+229' },
-        { code: 'moov_bj', nom: 'Moov Money Bénin', indicatif: '+229' },
-        { code: 'celtiis_bj', nom: 'Celtiis Cash Bénin', indicatif: '+229' }
-      ],
-      TG: [
-        { code: 'togocel', nom: 'T-Money Togo', indicatif: '+228' },
-        { code: 'moov_tg', nom: 'Moov Money Togo', indicatif: '+228' }
-      ],
-      BF: [
-        { code: 'orange_bf', nom: 'Orange Burkina Faso', indicatif: '+226' },
-        { code: 'moov_bf', nom: 'Moov Burkina Faso', indicatif: '+226' }
-      ],
-      ML: [
-        { code: 'orange_ml', nom: 'Orange Mali', indicatif: '+223' },
-        { code: 'moov_ml', nom: 'Moov Money Mali', indicatif: '+223' }
-      ],
-      XX: [
-        { code: 'card', nom: 'Carte bancaire (Visa/Mastercard)', indicatif: '+' }
-      ]
-    };
-
-    function changerPlan(plan) {
-      planActif = plan;
+    function appliquerPlanInitial() {
+      const planParamInit = new URLSearchParams(window.location.search).get('plan');
       const cardSolo = document.getElementById('cardPlanSolo');
       const cardAtelier = document.getElementById('cardPlanAtelier');
-      const labelRecap = document.getElementById('labelRecapPlan');
-      const montantRecap = document.getElementById('montantRecapGrand');
-      const btnText = document.getElementById('btnPayerText');
-
-      if (plan === 'atelier') {
-        montantActif = 5100;
-        cardSolo.style.background = 'white';
-        cardSolo.style.borderColor = 'rgba(124, 58, 237, 0.2)';
-        cardAtelier.style.background = 'var(--lavande-100)';
-        cardAtelier.style.borderColor = 'var(--violet-600)';
-        labelRecap.textContent = "FORMULE SÉLECTIONNÉE : ATELIER";
-        montantRecap.innerHTML = '5 100 FCFA <span style="font-size: 0.9rem; font-weight: 500; color: var(--texte-doux);">/ mois</span>';
-        btnText.textContent = "Payer 5 100 FCFA";
+      if (planParamInit === 'solo') {
+        cardSolo?.classList.add('active');
+        cardAtelier?.classList.remove('active');
       } else {
-        montantActif = 2600;
-        cardSolo.style.background = 'var(--lavande-100)';
-        cardSolo.style.borderColor = 'var(--violet-600)';
-        cardAtelier.style.background = 'white';
-        cardAtelier.style.borderColor = 'rgba(124, 58, 237, 0.2)';
-        labelRecap.textContent = "FORMULE SÉLECTIONNÉE : UN TAILLEUR";
-        montantRecap.innerHTML = '2 600 FCFA <span style="font-size: 0.9rem; font-weight: 500; color: var(--texte-doux);">/ mois</span>';
-        btnText.textContent = "Payer 2 600 FCFA";
+        cardSolo?.classList.remove('active');
+        cardAtelier?.classList.add('active');
       }
     }
 
-    function rafraichirReseaux() {
-      const paysSelect = document.getElementById('selectPays');
-      const container = document.getElementById('containerReseaux');
-      const prefixeEl = document.getElementById('prefixePays');
-      const codePays = paysSelect.value;
-      const liste = RESEAUX_PAR_PAYS[codePays] || RESEAUX_PAR_PAYS.CM;
+    async function lancerPaiementDirect(plan, triggerBtn) {
+      if (_paiementEnCours) return;
+      const alertBox = document.getElementById('demandeAlert');
+      if (alertBox) {
+        alertBox.className = 'auth-alert-message';
+        alertBox.textContent = '';
+      }
 
-      container.innerHTML = '';
-      reseauActif = liste[0].code;
-      prefixeEl.textContent = liste[0].indicatif || '+237';
+      const session = _sessionCourante || await Auth.protegerRoute();
+      if (!session) return;
+      _sessionCourante = session;
 
-      liste.forEach((r, idx) => {
-        const badge = document.createElement('div');
-        badge.className = `network-badge ${idx === 0 ? 'active' : ''}`;
-        badge.innerHTML = `<span>📱</span> <span>${r.nom}</span>`;
-        badge.onclick = () => {
-          document.querySelectorAll('.network-badge').forEach(b => b.classList.remove('active'));
-          badge.classList.add('active');
-          reseauActif = r.code;
-        };
-        container.appendChild(badge);
-      });
+      const planChoisi = plan === 'atelier' ? 'atelier' : 'solo';
+      const codePays = (session.user.user_metadata?.pays || 'CM').toUpperCase();
+      const phoneMeta = (session.user.user_metadata?.telephone || '').trim();
 
-      if (codePays === 'XX') {
-        document.getElementById('checkCheckoutHeberge').checked = true;
+      const btnSolo = document.getElementById('btnPayerSolo');
+      const btnAtelier = document.getElementById('btnPayerAtelier');
+      const texteOriginal = triggerBtn ? triggerBtn.innerHTML : '';
+
+      _paiementEnCours = true;
+      if (btnSolo) btnSolo.disabled = true;
+      if (btnAtelier) btnAtelier.disabled = true;
+      if (triggerBtn) triggerBtn.textContent = 'Connexion à SasPay...';
+
+      try {
+        const res = await SasPayClient.initierPaiement({
+          plan: planChoisi,
+          mode: 'checkout',
+          country: codePays,
+          network: 'checkout',
+          phone: phoneMeta
+        });
+
+        if (res && res.checkout_url) {
+          if (triggerBtn) triggerBtn.textContent = 'Redirection vers SasPay...';
+          if (res.session_id) {
+            try { sessionStorage.setItem('saspay_active_session_id', res.session_id); } catch (e) {}
+          }
+          if (res.transaction_id) {
+            try { sessionStorage.setItem('saspay_active_transaction_id', res.transaction_id); } catch (e) {}
+          }
+          window.location.href = res.checkout_url;
+          return;
+        }
+
+        throw new Error("Lien de paiement SasPay indisponible pour le moment.");
+      } catch (err) {
+        _paiementEnCours = false;
+        if (btnSolo) btnSolo.disabled = false;
+        if (btnAtelier) btnAtelier.disabled = false;
+        if (triggerBtn && texteOriginal) triggerBtn.innerHTML = texteOriginal;
+
+        if (alertBox) {
+          alertBox.className = 'auth-alert-message error';
+          alertBox.textContent = "Erreur : " + (err.message || "Impossible d'ouvrir le paiement SasPay.");
+        }
       }
     }
 
-    function toggleModeHeberge() {
-      const check = document.getElementById('checkCheckoutHeberge');
-      const groupPhone = document.getElementById('groupPhone');
-      if (check.checked) {
-        groupPhone.style.opacity = '0.5';
-      } else {
-        groupPhone.style.opacity = '1';
-      }
-    }
-
-    function fermerModaleAttente() {
-      if (typeof arreterPollingActuel === 'function') {
-        arreterPollingActuel();
-      }
-      document.getElementById('modalAttentePaiement').classList.remove('active');
-      document.getElementById('btnPayer').disabled = false;
-      document.getElementById('btnPayerText').textContent = `Payer ${montantActif.toLocaleString()} FCFA`;
-    }
+    appliquerPlanInitial();
 
     document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
       const session = await Auth.protegerRoute();
       if (!session) return;
+      _sessionCourante = session;
 
-      const codePays = (session.user.user_metadata?.pays || 'CM').toUpperCase();
-      const paysSelect = document.getElementById('selectPays');
-      const phoneInput = document.getElementById('inputTelephone');
       const alertBox = document.getElementById('demandeAlert');
-      const form = document.getElementById('formPaiementSaspay');
-      const submitBtn = document.getElementById('btnPayer');
-      const btnText = document.getElementById('btnPayerText');
 
-      if (paysSelect && RESEAUX_PAR_PAYS[codePays]) {
-        paysSelect.value = codePays;
-      }
-      rafraichirReseaux();
-
-      if (session.user.user_metadata?.telephone) {
-        phoneInput.value = session.user.user_metadata.telephone.replace(/^\+?\d{1,4}/, '').trim();
-      }
-
-      // Gestion du retour depuis une session de checkout externe (?retour_saspay=1)
-      const urlParams = new URLSearchParams(window.location.search);
+      // Gestion du retour depuis une session de checkout SasPay (?retour_saspay=1)
       if (urlParams.get('retour_saspay')) {
         const sessionIdParam = urlParams.get('session_id') || sessionStorage.getItem('saspay_active_session_id');
         const txnIdParam = urlParams.get('transaction_id') || sessionStorage.getItem('saspay_active_transaction_id');
@@ -375,7 +628,6 @@
             alertBox.className = 'auth-alert-message';
             alertBox.innerHTML = "⏳ <strong>Paiement en attente de confirmation opérateur.</strong><br>Veuillez patienter quelques instants, votre abonnement sera activé dès réception de la confirmation.";
 
-            // Polling automatique pour finaliser la vérification
             SasPayClient.demarrerPolling({
               session_id: sessionIdParam,
               transaction_id: txnIdParam,
@@ -391,7 +643,7 @@
               onFailure: () => {
                 SasPayClient.nettoyerIdentifiants();
                 alertBox.className = 'auth-alert-message error';
-                alertBox.textContent = "❌ Le paiement n'a pas pu aboutir. Veuillez réessayer ou choisir un autre opérateur.";
+                alertBox.textContent = "❌ Le paiement n'a pas pu aboutir. Veuillez réessayer.";
               },
               onTimeout: () => {
                 alertBox.className = 'auth-alert-message';
@@ -411,88 +663,6 @@
           alertBox.textContent = "Erreur lors de la vérification : " + (e.message || "Impossible de joindre le serveur.");
         }
       }
-
-      // Soumission du formulaire de paiement
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        alertBox.className = 'auth-alert-message';
-        alertBox.textContent = '';
-
-        const pays = paysSelect.value;
-        const prefixe = document.getElementById('prefixePays').textContent.replace('+', '').trim();
-        let numTel = phoneInput.value.replace(/\s+/g, '').trim();
-        const estHeberge = document.getElementById('checkCheckoutHeberge').checked;
-
-        if (!estHeberge && !numTel) {
-          alertBox.className = 'auth-alert-message error';
-          alertBox.textContent = "Veuillez renseigner votre numéro de téléphone Mobile Money.";
-          return;
-        }
-
-        const phoneComplet = `+${prefixe}${numTel.replace(/^0+/, '')}`;
-
-        submitBtn.disabled = true;
-        btnText.textContent = "Initialisation sécurisée...";
-
-        try {
-          const res = await SasPayClient.initierPaiement({
-            plan: planActif,
-            mode: estHeberge ? 'checkout' : 'softpay',
-            country: pays,
-            network: reseauActif,
-            phone: phoneComplet,
-          });
-
-          // Si SasPay demande une redirection (Wave, Orange, Carte ou Checkout hébergé)
-          if (res.checkout_url) {
-            btnText.textContent = "Redirection vers la page de paiement...";
-            if (res.session_id) {
-              try { sessionStorage.setItem("saspay_active_session_id", res.session_id); } catch (e) {}
-            }
-            if (res.transaction_id) {
-              try { sessionStorage.setItem("saspay_active_transaction_id", res.transaction_id); } catch (e) {}
-            }
-            window.location.href = res.checkout_url;
-            return;
-          }
-
-          // Sinon : Flux USSD Push direct sur le téléphone mobile
-          const modal = document.getElementById('modalAttentePaiement');
-          const statutLive = document.getElementById('modalStatutLive');
-          modal.classList.add('active');
-          statutLive.textContent = "Demande envoyée. Consultez votre téléphone...";
-
-          arreterPollingActuel = SasPayClient.demarrerPolling({
-            transaction_id: res.transaction_id,
-            onTick: ({ tentatives, secondesRestantes }) => {
-              statutLive.textContent = `En attente de votre code secret... (${secondesRestantes}s)`;
-            },
-            onSuccess: () => {
-              statutLive.style.color = '#16A34A';
-              statutLive.textContent = "✓ Paiement validé avec succès !";
-              document.getElementById('modalMessage').textContent = "Votre compte a été activé pour 30 jours consécutifs. Redirection vers votre atelier...";
-              setTimeout(() => {
-                window.location.href = 'app.html';
-              }, 2000);
-            },
-            onFailure: () => {
-              statutLive.style.color = '#DC2626';
-              statutLive.textContent = "❌ Échec de la transaction";
-              document.getElementById('modalMessage').textContent = "La transaction a été refusée par l'opérateur (solde insuffisant ou code PIN erroné).";
-            },
-            onTimeout: () => {
-              statutLive.style.color = '#DC2626';
-              statutLive.textContent = "Délai expiré";
-              document.getElementById('modalMessage').textContent = "Le délai de confirmation est dépassé. Veuillez réessayer.";
-            }
-          });
-        } catch (err) {
-          alertBox.className = 'auth-alert-message error';
-          alertBox.textContent = "Erreur : " + (err.message || "Impossible d'initier le paiement.");
-          submitBtn.disabled = false;
-          btnText.textContent = `Payer ${montantActif.toLocaleString()} FCFA`;
-        }
-      });
     });
   </script>
 </body>

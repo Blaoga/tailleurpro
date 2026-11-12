@@ -3,35 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tailleur Pro | L'application de gestion pour les tailleurs d'Afrique</title>
-  
-  <!-- Meta SEO & Description -->
-  <meta name="description" content="Gagnez plus d'argent, suivez vos avances et vos dettes, gardez les mesures de vos clients et recevez des rappels de livraison sur votre téléphone.">
-  <meta name="theme-color" content="#120B2E">
-  
-  <!-- Open Graph / WhatsApp Preview -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Tailleur Pro - Gagnez plus. Oubliez moins. Cousez tranquille.">
-  <meta property="og:description" content="L'application mobile simple pour les tailleurs d'Afrique francophone. 15 jours d'essai gratuit sans carte bancaire.">
-  <meta property="og:image" content="https://tailleurpro.app/og-preview.jpg">
-  <meta property="og:locale" content="fr_FR">
-  <meta name="twitter:card" content="summary_large_image">
+  <title>Tailleur Pro — Votre atelier. Mieux organisé.</title>
+  <meta name="description" content="Clients, commandes, mesures et paiements. Gérez tout simplement avec Tailleur Pro. 15 jours d'essai gratuit.">
+  <meta name="theme-color" content="#080D29">
 
-  <!-- Feuilles de style -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tailleur Pro — Votre atelier. Mieux organisé.">
+  <meta property="og:description" content="Clients, commandes, mesures et paiements. Gérez tout simplement avec Tailleur Pro.">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23B65CFF'/%3E%3Cstop offset='100%25' stop-color='%237838D8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cg fill='none' stroke='%23FFF' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='20' cy='20' r='6'/%3E%3Ccircle cx='20' cy='44' r='6'/%3E%3Cline x1='46' y1='16' x2='24' y2='40'/%3E%3Cline x1='35' y1='35' x2='46' y2='46'/%3E%3Cline x1='24' y1='24' x2='31' y2='31'/%3E%3C/g%3E%3C/svg%3E">
+
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="landing.css">
 </head>
-<body>
+<body class="landing-page" id="accueil">
 
-  <!-- ========================================================================
-       HEADER FIXE
-       ======================================================================== -->
-  <header class="site-header" id="topHeader">
+  <a href="#contenu-principal" class="skip-link">Aller au contenu principal</a>
+
+  <!-- ======================================================================
+       NAVIGATION COMPACTE
+       ====================================================================== -->
+  <header class="site-header" id="siteHeader">
     <div class="container header-container">
-      <!-- Logo avec Ciseaux SVG -->
       <a href="index.html" class="brand-logo" aria-label="Accueil Tailleur Pro">
         <div class="brand-icon-wrapper" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="6" cy="6" r="3"></circle>
             <circle cx="6" cy="18" r="3"></circle>
             <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
@@ -42,22 +40,19 @@
         <span class="brand-name">Tailleur<span>Pro</span></span>
       </a>
 
-      <!-- Liens Navigation Desktop -->
       <nav class="header-nav" aria-label="Navigation principale">
+        <a href="#accueil" class="nav-link">Accueil</a>
+        <a href="#fonctionnalites" class="nav-link">Fonctionnalités</a>
         <a href="#comment-ca-marche" class="nav-link">Comment ça marche</a>
-        <a href="#pourquoi" class="nav-link">Pourquoi nous</a>
         <a href="#tarifs" class="nav-link">Tarifs</a>
-        <a href="#temoignages" class="nav-link">Témoignages</a>
       </nav>
 
-      <!-- Actions Desktop -->
       <div class="header-actions">
-        <a href="connexion.html" class="btn btn-ghost btn-connexion-action">Connexion</a>
-        <a href="inscription.html" class="btn btn-primary">Commencer gratuitement</a>
+        <a href="connexion.html" class="btn btn-ghost btn-sm btn-connexion-action">Connexion</a>
+        <a href="inscription.html" class="btn btn-luminous btn-sm">Commencer</a>
       </div>
 
-      <!-- Bouton Hamburger Mobile -->
-      <button class="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">
+      <button type="button" class="hamburger-btn" id="hamburgerBtn" aria-label="Ouvrir le menu de navigation" aria-expanded="false" aria-controls="mobileNavDrawer">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -65,538 +60,521 @@
     </div>
   </header>
 
-  <!-- Tiroir de Navigation Mobile Plein Écran -->
-  <div class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Menu mobile">
-    <nav class="mobile-nav-links">
+  <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+    <nav class="mobile-nav-links" aria-label="Navigation mobile">
+      <a href="#accueil" class="mobile-nav-link">Accueil</a>
+      <a href="#fonctionnalites" class="mobile-nav-link">Fonctionnalités</a>
       <a href="#comment-ca-marche" class="mobile-nav-link">Comment ça marche</a>
-      <a href="#pourquoi" class="mobile-nav-link">Pourquoi nous</a>
       <a href="#tarifs" class="mobile-nav-link">Tarifs</a>
-      <a href="#temoignages" class="mobile-nav-link">Témoignages</a>
     </nav>
     <div class="mobile-nav-actions">
-      <a href="connexion.html" class="btn btn-secondary btn-connexion-action" style="width:100%;">Connexion</a>
-      <a href="inscription.html" class="btn btn-primary" style="width:100%;">Essayer gratuitement 15 jours</a>
+      <a href="connexion.html" class="btn btn-ghost btn-connexion-action">Connexion</a>
+      <a href="inscription.html" class="btn btn-luminous">Commencer gratuitement</a>
     </div>
   </div>
 
-  <main>
-    <!-- ======================================================================
-         SECTION 6.1 : HERO SOMBRE IMMERSIF
-         ====================================================================== -->
-    <section class="hero-section" aria-labelledby="heroMainHeading">
-      <!-- Halos lumineux d'ambiance violet -->
-      <div class="hero-ambient-orb hero-orb-1" aria-hidden="true"></div>
-      <div class="hero-ambient-orb hero-orb-2" aria-hidden="true"></div>
+  <main class="landing-main" id="contenu-principal">
 
-      <div class="container">
-        <div class="hero-grid">
-          <!-- Colonne Texte & CTA -->
-          <div class="hero-content">
-            <!-- Badge pill -->
-            <div class="badge badge-dark">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              <span>Pour les tailleurs d’Afrique francophone</span>
-            </div>
+    <!-- ====================================================================
+         1. HERO MINIMALISTE & VITRINE UNIQUE TAILLEUR PRO
+         ==================================================================== -->
+    <section class="hero-section">
+      <div class="hero-ambient-glow" aria-hidden="true"></div>
 
-            <!-- Titre H1 Animé & Centré avec Machine à écrire (Section 6.6) -->
-            <h1 class="hero-title" id="heroMainHeading">
-              <span class="hero-title-line">
-                Gagnez plus. Oubliez moins.
-              </span>
-              <span class="hero-title-line">
-                Cousez tranquille
-              </span>
-              <span class="hero-title-line dynamic-line">
-                <span class="typewriter-box">
-                  <span class="typewriter-text" id="typewriterTarget">et gagnez du temps</span><span class="typewriter-cursor" aria-hidden="true">|</span>
-                </span>
-              </span>
-            </h1>
+      <!-- Lignes de patron très discrètes en fond -->
+      <svg class="hero-pattern-lines" viewBox="0 0 1440 720" fill="none" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M-40 420 C 260 320, 520 510, 860 360 C 1100 250, 1280 390, 1490 270" stroke="rgba(182, 92, 255, 0.14)" stroke-width="1.2" stroke-dasharray="6 7"/>
+      </svg>
 
-            <!-- Sous-titre -->
-            <p class="hero-subtitle">
-              Tailleur Pro garde vos commandes, mesures, tissus et avances en sécurité sur votre téléphone. Fini les oublis, plus de temps pour coudre.
-            </p>
+      <!-- Outils de couture sélectionnés avec parcimonie (mètre ruban + bobine) -->
+      <div class="hero-couture-accents" aria-hidden="true">
+        <!-- Mètre ruban élégant coin supérieur gauche -->
+        <svg class="ornament-tape-corner" viewBox="0 0 200 100" fill="none">
+          <defs>
+            <linearGradient id="tpMinTape" x1="0" y1="0" x2="190" y2="90" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#B65CFF" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#1E2B68" stop-opacity="0.5"/>
+            </linearGradient>
+          </defs>
+          <path d="M6 18 C 60 12, 94 48, 138 64 C 164 74, 180 72, 194 86" stroke="url(#tpMinTape)" stroke-width="14" stroke-linecap="round"/>
+          <path d="M6 18 C 60 12, 94 48, 138 64 C 164 74, 180 72, 194 86" stroke="#FFFFFF" stroke-opacity="0.58" stroke-width="1.4" stroke-dasharray="2 8"/>
+        </svg>
 
-            <!-- Groupe de Boutons CTA -->
-            <div class="hero-cta-group">
-              <a href="inscription.html" class="btn btn-primary">
-                <span>Essayer gratuitement 15 jours</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </a>
-              <a href="#comment-ca-marche" class="btn btn-secondary">
-                <span>Voir comment ça marche</span>
-              </a>
-            </div>
+        <!-- Bobine de fil soignée coin supérieur droit -->
+        <svg class="ornament-spool-top" viewBox="0 0 96 106" fill="none">
+          <defs>
+            <linearGradient id="tpMinSpool" x1="20" y1="20" x2="72" y2="80" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#D4A6FF"/>
+              <stop offset="60%" stop-color="#7838D8"/>
+              <stop offset="100%" stop-color="#172054"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="48" cy="24" rx="20" ry="5.5" fill="#1C265E" stroke="#C8C9DC" stroke-opacity="0.65" stroke-width="1.1"/>
+          <rect x="32" y="27" width="32" height="46" rx="4" fill="url(#tpMinSpool)" stroke="rgba(255,255,255,0.25)"/>
+          <line x1="33" y1="36" x2="63" y2="39" stroke="rgba(255,255,255,0.36)" stroke-width="1.1"/>
+          <line x1="33" y1="46" x2="63" y2="49" stroke="rgba(255,255,255,0.28)" stroke-width="1.1"/>
+          <line x1="33" y1="56" x2="63" y2="59" stroke="rgba(255,255,255,0.36)" stroke-width="1.1"/>
+          <ellipse cx="48" cy="75" rx="20" ry="5.5" fill="#141C4C" stroke="#B65CFF" stroke-opacity="0.55" stroke-width="1.1"/>
+          <path d="M64 56 C 78 66, 78 82, 86 92" stroke="#B65CFF" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="4 4"/>
+        </svg>
+      </div>
 
-            <!-- Réassurance -->
-            <div class="hero-reassurance">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-              <span>Sans carte bancaire · Annulable à tout moment</span>
-            </div>
+      <div class="container hero-container-inner">
+        <!-- Bloc texte court & impactant -->
+        <div class="hero-copy">
+          <h1 class="hero-title" id="heroMainHeading">
+            <span class="hero-title-static">Votre atelier.</span>
+            <span class="hero-rotating-slot">
+              <span class="hero-animated-phrase tp-text-gradient" id="heroAnimatedPhrase">Mieux organisé.</span>
+            </span>
+          </h1>
+
+          <p class="hero-subtitle">
+            Clients, commandes, mesures et paiements. Gérez tout simplement avec Tailleur Pro.
+          </p>
+
+          <div class="hero-actions">
+            <a href="inscription.html" class="btn btn-luminous">
+              <span>Commencer gratuitement</span>
+            </a>
+            <a href="#fonctionnalites" class="btn btn-glass">
+              <span>Découvrir</span>
+            </a>
           </div>
 
-          <!-- Colonne Mockup Téléphone Flottant -->
-          <div class="hero-visual">
-            <div class="phone-mockup-wrapper">
-              <div class="phone-mockup-frame">
-                <div class="phone-screen">
-                  <!-- Barre d'état téléphone -->
-                  <div class="phone-status-bar">
-                    <span>9:41</span>
-                    <div class="phone-notch"></div>
-                    <span>4G 85%</span>
-                  </div>
+          <p class="hero-reassurance">15 jours offerts · Sans carte bancaire</p>
+        </div>
 
-                  <!-- En-tête app -->
-                  <div class="phone-greeting">
-                    <div>
-                      <div class="phone-greeting-user">Bonjour, Ousmane 👋</div>
-                      <div class="phone-greeting-sub">Atelier Prestige · Yaoundé</div>
-                    </div>
-                    <div class="phone-bell-icon">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                      </svg>
-                      <div class="phone-bell-dot"></div>
-                    </div>
-                  </div>
+        <!-- UNE SEULE ILLUSTRATION / VITRINE PRINCIPALE FORTE : Tableau de bord + Ciseaux & Fil -->
+        <div class="hero-showcase-wrap">
+          <!-- Ciseaux de tailleur bien dessinés sur le coin supérieur droit de la vitrine -->
+          <svg class="showcase-shears-art" viewBox="0 0 140 100" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="tpMinBlade" x1="16" y1="22" x2="108" y2="72" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#FFFFFF"/>
+                <stop offset="65%" stop-color="#C8C9DC"/>
+                <stop offset="100%" stop-color="#7838D8"/>
+              </linearGradient>
+            </defs>
+            <path d="M16 32 L 88 54 L 78 62 Z" fill="url(#tpMinBlade)"/>
+            <path d="M26 74 L 90 46 L 80 40 Z" fill="url(#tpMinBlade)" fill-opacity="0.82"/>
+            <circle cx="80" cy="49" r="3.2" fill="#080D29" stroke="#FFFFFF" stroke-width="1.2"/>
+            <ellipse cx="109" cy="36" rx="13" ry="8" transform="rotate(-18 109 36)" stroke="#B65CFF" stroke-width="4.2"/>
+            <ellipse cx="113" cy="70" rx="14.5" ry="9" transform="rotate(22 113 70)" stroke="#7838D8" stroke-width="4.2"/>
+          </svg>
 
-                  <!-- Bandeau Alerte -->
-                  <div class="phone-alert-card">
-                    <span style="font-size: 1rem;">🔔</span>
-                    <div>
-                      <strong>Demain :</strong> Robe brodée de Mme Ngo (reste 15 000 F)
-                    </div>
-                  </div>
-
-                  <!-- Mini Dashboard 2x2 Stats -->
-                  <div class="phone-stat-grid">
-                    <div class="phone-stat-card">
-                      <span class="phone-stat-title">Commandes en cours</span>
-                      <span class="phone-stat-value">12</span>
-                      <span class="phone-stat-chip">Toutes actives →</span>
-                    </div>
-
-                    <div class="phone-stat-card">
-                      <span class="phone-stat-title">À livrer cette semaine</span>
-                      <span class="phone-stat-value" style="color: #FBBF24;">4</span>
-                      <span class="phone-stat-chip">Planifiées →</span>
-                    </div>
-
-                    <div class="phone-stat-card">
-                      <span class="phone-stat-title">Avances à encaisser</span>
-                      <span class="phone-stat-value" style="color: #A78BFA; font-size: 0.95rem;">45 000 F</span>
-                      <span class="phone-stat-chip">3 clients →</span>
-                    </div>
-
-                    <div class="phone-stat-card">
-                      <span class="phone-stat-title">Gagné ce mois</span>
-                      <span class="phone-stat-value" style="color: #34D399; font-size: 0.95rem;">180 000 F</span>
-                      <span class="phone-stat-chip">En hausse ↑</span>
-                    </div>
-                  </div>
-
-                  <!-- Mini barre de navigation du bas -->
-                  <div class="phone-bottom-nav">
-                    <div class="phone-nav-pill-active">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                      </svg>
-                      <span>Accueil</span>
-                    </div>
-                    <div class="phone-nav-icon-inactive">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                      </svg>
-                    </div>
-                    <div class="phone-nav-icon-inactive">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                      </svg>
-                    </div>
-                    <div class="phone-nav-icon-inactive">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                      </svg>
-                    </div>
-                  </div>
+          <!-- Composition unique et épurée du tableau de bord Tailleur Pro -->
+          <div class="app-showcase-frame">
+            <div class="app-showcase-topbar">
+              <div class="app-showcase-user">
+                <div class="app-avatar-dot" aria-hidden="true">TP</div>
+                <div>
+                  <div class="app-showcase-name">Tableau de bord Atelier</div>
+                  <div class="app-showcase-sub">Vue d'ensemble</div>
                 </div>
+              </div>
+              <span class="app-trial-chip">Essai 15 jours</span>
+            </div>
+
+            <div class="app-kpi-grid">
+              <div class="app-kpi-card">
+                <span class="app-kpi-label">Commandes en cours</span>
+                <span class="app-kpi-val">12</span>
+              </div>
+              <div class="app-kpi-card">
+                <span class="app-kpi-label">À livrer</span>
+                <span class="app-kpi-val accent-amber">4</span>
+              </div>
+              <div class="app-kpi-card">
+                <span class="app-kpi-label">À encaisser</span>
+                <span class="app-kpi-val accent-violet">45 000 FCFA</span>
+              </div>
+              <div class="app-kpi-card">
+                <span class="app-kpi-label">Encaissé ce mois</span>
+                <span class="app-kpi-val accent-emerald">180 000 FCFA</span>
+              </div>
+            </div>
+
+            <div class="app-orders-preview">
+              <div class="app-order-row">
+                <div class="app-order-info">
+                  <strong>Ensemble brodé — M. Konaté</strong>
+                  <span>Reste dû : 15 000 FCFA</span>
+                </div>
+                <span class="app-status-tag status-couture">En couture</span>
+              </div>
+              <div class="app-order-row">
+                <div class="app-order-info">
+                  <strong>Robe sur mesure — Mme Ndiaye</strong>
+                  <span>Mesures enregistrées</span>
+                </div>
+                <span class="app-status-tag status-prete">Prête</span>
               </div>
             </div>
           </div>
+
+          <!-- Courbe fine de fil sous la vitrine -->
+          <svg class="showcase-thread-accent" viewBox="0 0 360 28" fill="none" aria-hidden="true">
+            <path d="M12 14 C 92 4, 184 26, 348 10" stroke="rgba(182, 92, 255, 0.42)" stroke-width="1.3" stroke-dasharray="5 5"/>
+          </svg>
         </div>
       </div>
     </section>
 
-    <!-- ======================================================================
-         SECTION 6.2 : COMMENT ÇA MARCHE (3 ÉTAPES)
-         ====================================================================== -->
+    <!-- ====================================================================
+         2. FONCTIONNALITÉS (CARTES COMPACTES & ÉPURÉES)
+         ==================================================================== -->
+    <section class="section-control" id="fonctionnalites">
+      <div class="container">
+        <div class="tp-section-header" data-reveal>
+          <span class="section-eyebrow">Fonctionnalités</span>
+          <h2>Tout votre atelier, au même endroit.</h2>
+          <p>Les outils essentiels pour gérer vos tenues sans cahier perdu.</p>
+        </div>
+
+        <div class="features-grid-clean">
+          <article class="feature-item-card" data-reveal>
+            <div class="feature-icon-sm" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="feature-item-text">
+              <h3>Clients</h3>
+              <p>Contacts et historique complet de chaque client.</p>
+            </div>
+          </article>
+
+          <article class="feature-item-card" data-reveal>
+            <div class="feature-icon-sm" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+              </svg>
+            </div>
+            <div class="feature-item-text">
+              <h3>Commandes</h3>
+              <p>Tissu, date promise et statut : de Reçue à Livrée.</p>
+            </div>
+          </article>
+
+          <article class="feature-item-card" data-reveal>
+            <div class="feature-icon-sm" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"></path>
+                <path d="m14.5 12.5 2-2"></path><path d="m11.5 9.5 2-2"></path>
+              </svg>
+            </div>
+            <div class="feature-item-text">
+              <h3>Mesures</h3>
+              <p>Poitrine, épaules, taille et longueurs sauvegardées.</p>
+            </div>
+          </article>
+
+          <article class="feature-item-card" data-reveal>
+            <div class="feature-icon-sm" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+            </div>
+            <div class="feature-item-text">
+              <h3>Paiements</h3>
+              <p>Avances perçues et reste dû calculé automatiquement.</p>
+            </div>
+          </article>
+
+          <article class="feature-item-card" data-reveal>
+            <div class="feature-icon-sm" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <div class="feature-item-text">
+              <h3>Dépenses</h3>
+              <p>Achats de tissus, fournitures et frais mensuels suivis.</p>
+            </div>
+          </article>
+
+          <article class="feature-item-card" data-reveal>
+            <div class="feature-icon-sm" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div class="feature-item-text">
+              <h3>Activité</h3>
+              <p>Livraisons de la semaine et recettes en un coup d'œil.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         3. SAVOIR-FAIRE — SILHOUETTE COUTURE & SÉRÉNITÉ
+         ==================================================================== -->
+    <section class="section-craft" id="savoir-faire">
+      <div class="container">
+        <div class="craft-editorial-grid" data-reveal>
+          <div class="craft-editorial-copy">
+            <span class="section-eyebrow">Savoir-faire</span>
+            <h2>Moins de gestion. Plus de couture.</h2>
+            <ul class="craft-points">
+              <li>Retrouvez instantanément chaque fiche mesure.</li>
+              <li>Anticipez vos livraisons de la semaine.</li>
+              <li>Suivez vos avances et soldes sans erreur.</li>
+            </ul>
+          </div>
+
+          <!-- Illustration couture épurée : silhouette robe/veste + lignes de patron + ciseaux -->
+          <div class="craft-editorial-art" aria-hidden="true">
+            <svg viewBox="0 0 320 200" fill="none">
+              <defs>
+                <linearGradient id="tpEditGown" x1="80" y1="26" x2="180" y2="165" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#C68BFF" stop-opacity="0.5"/>
+                  <stop offset="100%" stop-color="#141C4C" stop-opacity="0.85"/>
+                </linearGradient>
+              </defs>
+              <!-- Courbe de patron discrète -->
+              <path d="M22 146 C 88 122, 178 164, 294 114" stroke="rgba(182, 92, 255, 0.35)" stroke-width="1.3" stroke-dasharray="5 5"/>
+              <!-- Silhouette patron veste légère en fond -->
+              <path d="M188 32 L 210 24 L 224 34 L 238 24 L 260 34 L 268 72 L 252 76 L 249 52 L 249 118 L 199 118 L 199 52 L 196 76 L 180 72 Z" stroke="rgba(200, 201, 220, 0.28)" stroke-width="1.2" stroke-dasharray="4 3"/>
+              <!-- Silhouette robe/mannequin élégante au premier plan -->
+              <circle cx="116" cy="24" r="6" fill="#11183D" stroke="#DFC0FF" stroke-width="1.4"/>
+              <path d="M108 36 C 88 40, 78 54, 82 72 C 86 86, 98 96, 96 112 C 94 128, 76 154, 72 170 L 160 170 C 156 154, 138 128, 136 112 C 134 96, 146 86, 150 72 C 154 54, 144 40, 124 36 Z" fill="url(#tpEditGown)" stroke="rgba(255,255,255,0.34)" stroke-width="1.3"/>
+              <path d="M97 108 C 110 114, 122 114, 135 108" stroke="rgba(255,255,255,0.55)" stroke-width="1.4"/>
+              <line x1="116" y1="170" x2="116" y2="192" stroke="#C8C9DC" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Petit mètre ruban courbé en bas à droite -->
+              <path d="M212 162 C 242 152, 266 168, 294 154" stroke="#B65CFF" stroke-opacity="0.6" stroke-width="8" stroke-linecap="round"/>
+              <path d="M212 162 C 242 152, 266 168, 294 154" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="1.2" stroke-dasharray="2 7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         4. COMMENT ÇA MARCHE (3 ÉTAPES ÉPURÉES)
+         ==================================================================== -->
     <section class="section-steps" id="comment-ca-marche">
       <div class="container">
-        <div class="section-header">
-          <div class="badge badge-violet">Prise en main en 1 minute</div>
-          <h2>Comment ça marche ?</h2>
-          <p>Une organisation limpide conçue pour votre quotidien à l'atelier, sans complications techniques.</p>
+        <div class="tp-section-header" data-reveal>
+          <span class="section-eyebrow">Comment ça marche</span>
+          <h2>Trois étapes simples.</h2>
         </div>
 
-        <div class="steps-timeline">
-          <!-- Étape 1 -->
-          <div class="step-card card-glass-light">
-            <div class="step-number-pill">1</div>
-            <h3 class="step-card-title">Créez votre compte</h3>
-            <p class="step-card-desc">
-              Inscrivez-vous en 1 minute avec votre numéro de téléphone. Vos 15 jours gratuits commencent immédiatement, sans carte bancaire.
-            </p>
-          </div>
+        <div class="steps-grid">
+          <article class="step-card" data-reveal>
+            <span class="step-num">01</span>
+            <h3>Créez votre compte</h3>
+            <p>15 jours d'essai gratuit immédiat, sans carte bancaire.</p>
+          </article>
 
-          <!-- Étape 2 -->
-          <div class="step-card card-glass-light">
-            <div class="step-number-pill">2</div>
-            <h3 class="step-card-title">Enregistrez clients &amp; commandes</h3>
-            <p class="step-card-desc">
-              Notez les mesures précises, le type de vêtement, le tissu confié, le prix convenu, l’avance perçue et la date promise.
-            </p>
-          </div>
+          <article class="step-card" data-reveal>
+            <span class="step-num">02</span>
+            <h3>Ajoutez vos commandes</h3>
+            <p>Enregistrez mesures, tissus, dates et avances.</p>
+          </article>
 
-          <!-- Étape 3 -->
-          <div class="step-card card-glass-light">
-            <div class="step-number-pill">3</div>
-            <h3 class="step-card-title">Soyez rappelé, soyez payé</h3>
-            <p class="step-card-desc">
-              Recevez des alertes avant chaque date de livraison et visualisez instantanément qui vous doit de l'argent pour relancer sans stress.
-            </p>
-          </div>
+          <article class="step-card" data-reveal>
+            <span class="step-num">03</span>
+            <h3>Suivez votre activité</h3>
+            <p>Visualisez vos livraisons et paiements en direct.</p>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- ======================================================================
-         SECTION 6.3 : POURQUOI TAILLEUR PRO (4 CARTES)
-         ====================================================================== -->
-    <section class="section-features" id="pourquoi">
-      <div class="container">
-        <div class="section-header">
-          <div class="badge badge-violet">Des résultats concrets</div>
-          <h2>Pourquoi choisir Tailleur Pro ?</h2>
-          <p>Tous les outils essentiels pour faire grandir votre réputation et votre chiffre d'affaires.</p>
-        </div>
-
-        <div class="features-grid">
-          <!-- Carte 1 -->
-          <div class="feature-card card-glass-light">
-            <div class="feature-icon-box">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-              </svg>
-            </div>
-            <h3 class="feature-title">Plus de commande oubliée</h3>
-            <p class="feature-text">
-              Rappels automatiques à J-3, J-1 et le jour même. Respectez toujours vos délais et fidélisez votre clientèle.
-            </p>
-          </div>
-
-          <!-- Carte 2 -->
-          <div class="feature-card card-glass-light">
-            <div class="feature-icon-box">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-              </svg>
-            </div>
-            <h3 class="feature-title">Mesures gardées pour toujours</h3>
-            <p class="feature-text">
-              Poitrine, épaules, taille, hanches... Même si vous perdez votre cahier ou changez de téléphone, vos données restent intactes.
-            </p>
-          </div>
-
-          <!-- Carte 3 -->
-          <div class="feature-card card-glass-light">
-            <div class="feature-icon-box">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-            </div>
-            <h3 class="feature-title">Avances et dettes suivies</h3>
-            <p class="feature-text">
-              Sachez au franc près ce qui est encaissé et ce qui reste dû. Relancez poliment par message WhatsApp en un clic.
-            </p>
-          </div>
-
-          <!-- Carte 4 -->
-          <div class="feature-card card-glass-light">
-            <div class="feature-icon-box">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-              </svg>
-            </div>
-            <h3 class="feature-title">Livraisons jamais mélangées</h3>
-            <p class="feature-text">
-              Suivi clair du statut : Reçue → Coupée → En couture → Prête → Livrée. Chaque tissu est associé au bon client.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 6.4 : TARIFS (2 OFFRES SEULEMENT)
-         ====================================================================== -->
+    <!-- ====================================================================
+         5. TARIFS (15 JOURS OFFERTS + SOLO 2 600 + ATELIER 5 100)
+         ==================================================================== -->
     <section class="section-pricing" id="tarifs">
       <div class="container">
-        <div class="section-header">
-          <div class="badge badge-violet">Simple &amp; Transparent</div>
-          <h2>Des tarifs clairs et accessibles</h2>
-          <p>Rentabilisez votre abonnement dès la première commande livrée à temps.</p>
+        <div class="tp-section-header" data-reveal>
+          <span class="section-eyebrow">Tarifs &amp; Paiement</span>
+          <h2>Rentabilisé dès la première commande.</h2>
+          <p>Essayez Tailleur Pro gratuitement pendant 15 jours, sans carte bancaire ni engagement.</p>
+        </div>
+
+        <div class="pricing-value-strip" data-reveal>
+          <span class="pricing-value-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            15 jours 100 % gratuits
+          </span>
+          <span class="pricing-value-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Activation en 30 sec
+          </span>
+          <span class="pricing-value-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Sans reconduction cachée
+          </span>
         </div>
 
         <div class="pricing-grid">
-          <!-- Offre 1 : Essai Gratuit -->
-          <div class="pricing-card card-glass-light">
-            <div class="pricing-card-badge-row">
-              <span class="pricing-tag-pill trial">15 Jours Offerts</span>
+          <article class="pricing-card" data-reveal>
+            <div class="pricing-top-row">
+              <h3 class="pricing-name">Solo</h3>
+              <span class="plan-tag">Indépendant</span>
             </div>
-
-            <div class="pricing-card-header">
-              <h3 class="pricing-name">Essai gratuit</h3>
-              <div class="pricing-price">0 FCFA</div>
-              <div class="pricing-duration">Pendant 15 jours dès l’inscription</div>
+            <p class="pricing-card-sub">L'essentiel pour travailler vite, sans carnet perdu.</p>
+            <div class="pricing-price-row">
+              <span class="pricing-amount">2 600 FCFA</span>
+              <span class="pricing-period">/ mois</span>
             </div>
-
-            <ul class="pricing-features-list">
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Accès complet sans engagement</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Fiches clients et mesures illimitées</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Enregistrement des commandes</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Rappels de livraison automatiques</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Aucune carte bancaire requise</span>
-              </li>
+            <ul class="pricing-list">
+              <li>Clients et mesures libres illimités</li>
+              <li>Commandes, statuts et dates de livraison</li>
+              <li>Acomptes, restes dus et reçus WhatsApp</li>
+              <li>Suivi des dépenses de tissus et atelier</li>
+              <li>Données sauvegardées et accessibles partout</li>
             </ul>
-
-            <div class="pricing-card-footer">
-              <a href="inscription.html" class="btn btn-outline-violet" style="width: 100%;">Commencer gratuitement (0 F)</a>
+            <div class="pricing-card-actions">
+              <a href="inscription.html" class="btn btn-glass">Essayer Solo gratuitement</a>
             </div>
-          </div>
+          </article>
 
-          <!-- Offre 2 : Un Tailleur (Solo) -->
-          <div class="pricing-card card-glass-light">
-            <div class="pricing-card-badge-row">
-              <span class="pricing-tag-pill solo">Artisan Solo</span>
-            </div>
-
-            <div class="pricing-card-header">
-              <h3 class="pricing-name">Un Tailleur</h3>
-              <div class="pricing-price">2 600 FCFA <span class="pricing-period">/ mois</span></div>
-              <div class="pricing-duration">Après les 15 jours gratuits</div>
-            </div>
-
-            <ul class="pricing-features-list">
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>1 compte tailleur indépendant</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Clients et mesures corporelles illimités</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Suivi complet des commandes &amp; livraisons</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Reçus de confection WhatsApp &amp; PDF</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Gestion des avances, dettes &amp; dépenses</span>
-              </li>
-            </ul>
-
-            <div class="pricing-card-footer">
-              <a href="inscription.html" class="btn btn-outline-violet" style="width: 100%;">Choisir Un Tailleur (2 600 F)</a>
-            </div>
-          </div>
-
-          <!-- Offre 3 : Atelier (Mise en avant) -->
-          <div class="pricing-card card-glass-light featured">
-            <div class="pricing-card-badge-row">
-              <span class="pricing-tag-pill featured">⭐ Le plus complet</span>
-            </div>
-
-            <div class="pricing-card-header">
+          <article class="pricing-card featured" data-reveal>
+            <div class="pricing-top-row">
               <h3 class="pricing-name">Atelier</h3>
-              <div class="pricing-price">5 100 FCFA <span class="pricing-period">/ mois</span></div>
-              <div class="pricing-duration">Après les 15 jours gratuits</div>
+              <span class="plan-tag plan-tag-featured">Recommandé</span>
             </div>
-
-            <ul class="pricing-features-list">
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Idéal atelier, équipe &amp; apprentis</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Gestion multi-confections intensive</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Reçus officiels avec nom de l'atelier</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Comptabilité consolidée (CA, Dépenses, Bénéfice)</span>
-              </li>
-              <li class="pricing-feature-item">
-                <svg class="pricing-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Assistance prioritaire 7j/7</span>
-              </li>
+            <p class="pricing-card-sub">Maîtrisez vos délais, recettes et recouvrements.</p>
+            <div class="pricing-price-row">
+              <span class="pricing-amount">5 100 FCFA</span>
+              <span class="pricing-period">/ mois</span>
+            </div>
+            <p class="pricing-daily-note">Soit moins de 175 FCFA / jour pour tout sécuriser</p>
+            <ul class="pricing-list">
+              <li>Tout le forfait Solo en illimité</li>
+              <li>Alertes prioritaires retards et livraisons</li>
+              <li>Bilan financier net : recettes et charges</li>
+              <li>Relance des dettes clients en 1 clic WhatsApp</li>
+              <li>Export complet de sauvegarde &amp; support prioritaire</li>
             </ul>
-
-            <div class="pricing-card-footer">
-              <a href="inscription.html" class="btn btn-primary" style="width: 100%;">Choisir Atelier (5 100 F)</a>
+            <div class="pricing-card-actions">
+              <a href="inscription.html" class="btn btn-luminous">Démarrer 15 jours offerts &rarr;</a>
             </div>
-          </div>
+          </article>
         </div>
 
-        <p class="pricing-reassurance-note">
-          Pas de surprise : après 15 jours, vous choisissez librement de continuer ou non. Aucun prélèvement automatique sans votre accord.
-        </p>
+        <div class="pricing-payment-trust" data-reveal>
+          <div class="pricing-trust-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span>Paiement simple par Mobile Money ou Carte bancaire</span>
+          </div>
+          <div class="pricing-networks-row">
+            <span class="pricing-net-pill">Wave</span>
+            <span class="pricing-net-pill">Orange Money</span>
+            <span class="pricing-net-pill">MTN MoMo</span>
+            <span class="pricing-net-pill">Moov Money</span>
+            <span class="pricing-net-pill">Visa / Mastercard</span>
+          </div>
+          <p class="pricing-trust-note">
+            Paiement 100 % sécurisé au moment où vous décidez de passer Pro. Aucune avance demandée à l'inscription.
+          </p>
+        </div>
       </div>
     </section>
 
-    <!-- ======================================================================
-         SECTION 6.5 : TÉMOIGNAGES (SCROLL SNAP MOBILE / GRILLE 3 COLONNES)
-         ====================================================================== -->
-    <section class="section-testimonials" id="temoignages">
+    <!-- ====================================================================
+         6. FAQ COMPACTE & ACCÈS RAPIDES
+         ==================================================================== -->
+    <section class="section-faq" id="faq">
       <div class="container">
-        <div class="section-header">
-          <div class="badge badge-violet">Retours d'expérience</div>
-          <h2>Ce que disent nos premiers utilisateurs</h2>
-          <p>Des artisans comme vous qui ont transformé la gestion de leur atelier.</p>
+        <div class="tp-section-header" data-reveal>
+          <span class="section-eyebrow">FAQ</span>
+          <h2>Questions fréquentes.</h2>
         </div>
 
-        <div class="testimonials-track">
-          <!-- Témoignage 1 -->
-          <div class="testimonial-card card-glass-light">
-            <div class="testimonial-stars" aria-label="Note : 5 sur 5">
-              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-            </div>
-            <p class="testimonial-text">
-              « Avant, j’oubliais les avances. Maintenant je vois tout de suite qui me doit quoi. »
-            </p>
-            <div class="testimonial-author">
-              <div class="avatar-initials">AK</div>
-              <div class="author-info">
-                <div class="author-name">Aminata K., 24 ans</div>
-                <div class="author-city">Douala, Cameroun 🇨🇲</div>
-              </div>
+        <div class="faq-list" data-reveal>
+          <div class="faq-item open">
+            <button type="button" class="faq-question" aria-expanded="true">
+              <span>Comment marche l'essai gratuit de 15 jours ?</span>
+              <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-answer">
+              Vous accédez librement à Tailleur Pro pendant 15 jours dès votre inscription, sans carte bancaire.
             </div>
           </div>
 
-          <!-- Témoignage 2 -->
-          <div class="testimonial-card card-glass-light">
-            <div class="testimonial-stars" aria-label="Note : 5 sur 5">
-              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-            </div>
-            <p class="testimonial-text">
-              « Mes mesures sont toujours là, même si je change de téléphone. Mes clients sont impressionnés. »
-            </p>
-            <div class="testimonial-author">
-              <div class="avatar-initials">KT</div>
-              <div class="author-info">
-                <div class="author-name">Kévin T., 28 ans</div>
-                <div class="author-city">Abidjan, Côte d'Ivoire 🇨🇮</div>
-              </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span>Comment activer un abonnement ensuite ?</span>
+              <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-answer">
+              Depuis votre espace Abonnement, réglez votre formule Solo (2 600 FCFA/mois) ou Atelier (5 100 FCFA/mois) par Mobile Money ou carte.
             </div>
           </div>
 
-          <!-- Témoignage 3 -->
-          <div class="testimonial-card card-glass-light">
-            <div class="testimonial-stars" aria-label="Note : 5 sur 5">
-              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-            </div>
-            <p class="testimonial-text">
-              « Je ne mélange plus mes dates de livraison. Je suis plus calme et je couds plus vite. »
-            </p>
-            <div class="testimonial-author">
-              <div class="avatar-initials">FM</div>
-              <div class="author-info">
-                <div class="author-name">Fatou M., 26 ans</div>
-                <div class="author-city">Brazzaville, Congo 🇨🇬</div>
-              </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span>Mes données sont-elles conservées après expiration ?</span>
+              <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-answer">
+              Oui. Vos fiches clients, mesures et commandes restent sauvegardées et accessibles dès le renouvellement.
             </div>
           </div>
         </div>
 
-        <p class="testimonials-disclaimer">
-          * Avis de tailleurs de notre phase de test.
-        </p>
+        <div class="assistance-strip" id="assistance" data-reveal>
+          <span>Accès directs :</span>
+          <div class="assistance-links-row">
+            <a href="connexion.html" class="btn btn-glass btn-sm">Connexion</a>
+            <a href="mot-de-passe.html" class="btn btn-glass btn-sm">Mot de passe</a>
+            <a href="abonnement.html" class="btn btn-glass btn-sm">Abonnement</a>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ======================================================================
-         SECTION 6.7 : CTA FINAL VIOLET SOMBRE
-         ====================================================================== -->
+    <!-- ====================================================================
+         7. APPEL À L'ACTION FINAL (ÉPURÉ)
+         ==================================================================== -->
     <section class="section-final-cta">
-      <div class="hero-ambient-orb hero-orb-1" aria-hidden="true"></div>
       <div class="container">
-        <div class="final-cta-box">
-          <div class="badge badge-dark">Lancez-vous aujourd'hui</div>
-          <h2 class="final-cta-title">Votre temps vaut de l’argent. Arrêtez de le perdre à chercher.</h2>
-          <p class="final-cta-sub">Rejoignez la nouvelle génération de tailleurs professionnels connectés.</p>
-          <a href="inscription.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 0 var(--space-5);">
-            <span>Commencer mes 15 jours gratuits</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-          <span style="font-size: var(--fs-petit); color: var(--texte-blanc-doux);">
-            15 jours offerts · Sans carte bancaire · Annulable à tout moment
-          </span>
+        <div class="final-cta-card" data-reveal>
+          <svg class="cta-tape-accent" viewBox="0 0 180 90" fill="none" aria-hidden="true">
+            <path d="M-8 78 C 44 74, 72 44, 126 52 C 148 56, 162 66, 174 64" stroke="rgba(182, 92, 255, 0.45)" stroke-width="12" stroke-linecap="round"/>
+            <path d="M-8 78 C 44 74, 72 44, 126 52 C 148 56, 162 66, 174 64" stroke="rgba(255, 255, 255, 0.45)" stroke-width="1.3" stroke-dasharray="2 8"/>
+          </svg>
+
+          <div class="final-cta-inner">
+            <h2>Passez à l'atelier organisé.</h2>
+            <p>Moins de paperasse, plus de temps pour coudre.</p>
+            <a href="inscription.html" class="btn btn-luminous">
+              <span>Commencer gratuitement</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
+
   </main>
 
-  <!-- ========================================================================
-       SECTION 6.8 : FOOTER
-       ======================================================================== -->
+  <!-- ======================================================================
+       8. FOOTER MINIMALISTE
+       ====================================================================== -->
   <footer class="site-footer">
     <div class="container">
-      <div class="footer-grid">
-        <!-- Marque & description -->
-        <div class="footer-brand">
-          <a href="index.html" class="brand-logo" aria-label="Tailleur Pro Accueil">
+      <div class="footer-main-grid">
+        <div class="footer-brand-block">
+          <a href="#accueil" class="brand-logo" aria-label="Retour en haut Tailleur Pro">
             <div class="brand-icon-wrapper" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="6" cy="6" r="3"></circle>
                 <circle cx="6" cy="18" r="3"></circle>
                 <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
@@ -606,48 +584,48 @@
             </div>
             <span class="brand-name">Tailleur<span>Pro</span></span>
           </a>
-          <p style="font-size: var(--fs-petit); color: var(--texte-blanc-doux); margin-top: var(--space-2); max-width: 300px;">
-            L'outil indispensable pour piloter votre atelier de couture au Cameroun, en Côte d'Ivoire et au Congo.
+          <p class="footer-brand-desc">
+            Gestion simple pour tailleurs et ateliers de couture.
           </p>
         </div>
 
-        <!-- Colonne 1 : Navigation -->
-        <div class="footer-nav-col">
-          <div class="footer-col-title">Navigation</div>
-          <a href="#comment-ca-marche" class="footer-link">Comment ça marche</a>
-          <a href="#pourquoi" class="footer-link">Pourquoi Tailleur Pro</a>
-          <a href="#tarifs" class="footer-link">Tarifs &amp; Essai</a>
-          <a href="#temoignages" class="footer-link">Témoignages</a>
-        </div>
+        <div class="footer-columns-grid">
+          <div class="footer-col">
+            <div class="footer-col-heading">Tailleur Pro</div>
+            <a href="#accueil" class="footer-nav-link">Présentation</a>
+            <a href="#fonctionnalites" class="footer-nav-link">Fonctionnalités</a>
+            <a href="#tarifs" class="footer-nav-link">Tarifs</a>
+          </div>
 
-        <!-- Colonne 2 : Espace Membre -->
-        <div class="footer-nav-col">
-          <div class="footer-col-title">Accès</div>
-          <a href="inscription.html" class="footer-link">Créer un compte</a>
-          <a href="connexion.html" class="footer-link">Se connecter</a>
-          <a href="mot-de-passe.html" class="footer-link">Mot de passe oublié</a>
-          <a href="app.html" class="footer-link">Mon Atelier (App)</a>
-        </div>
+          <div class="footer-col">
+            <div class="footer-col-heading">Assistance</div>
+            <a href="#faq" class="footer-nav-link">Centre d'aide</a>
+            <a href="#assistance" class="footer-nav-link">Contact</a>
+            <a href="#faq" class="footer-nav-link">FAQ</a>
+          </div>
 
-        <!-- Colonne 3 : Support & Légal -->
-        <div class="footer-nav-col">
-          <div class="footer-col-title">Assistance &amp; Légal</div>
-          <a href="https://wa.me/237600000000?text=Bonjour%20Tailleur%20Pro%2C%20j%27ai%20besoin%20d%27aide" target="_blank" rel="noopener noreferrer" class="footer-link">
-            <span>Support WhatsApp</span>
-          </a>
-          <a href="conditions.html" class="footer-link">Conditions d'utilisation</a>
-          <a href="confidentialite.html" class="footer-link">Politique de confidentialité</a>
+          <div class="footer-col">
+            <div class="footer-col-heading">Informations</div>
+            <a href="conditions.html" class="footer-nav-link">Conditions d'utilisation</a>
+            <a href="confidentialite.html" class="footer-nav-link">Politique de confidentialité</a>
+          </div>
+
+          <div class="footer-col">
+            <div class="footer-col-heading">Compte</div>
+            <a href="connexion.html" class="footer-nav-link">Connexion</a>
+            <a href="inscription.html" class="footer-nav-link">Créer un compte</a>
+          </div>
         </div>
       </div>
 
-      <div class="footer-bottom-bar">
-        <span>&copy; 2026 Tailleur Pro. Tous droits réservés.</span>
-        <span>Fait avec ❤️ pour les tailleurs d’Afrique</span>
+      <div class="footer-bottom">
+        <span>© Tailleur Pro — Gestion d'atelier de couture.</span>
       </div>
     </div>
+
+    <div class="footer-watermark" aria-hidden="true">TailleurPro</div>
   </footer>
 
-  <!-- Scripts JavaScript (sans framework) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
