@@ -29,6 +29,22 @@ const SasPayClient = {
     }
 
     const functionUrl = `${CONFIG.SUPABASE_URL}/functions/v1/saspay-initiate`;
+    const origin = window.location.origin || "";
+    const estOriginPublicHttps = /^https:\/\/(?!(localhost|127\.0\.0\.1)(:|\/|$))/i.test(origin);
+    const phoneClean = String(phone || "").replace(/\s+/g, "").trim();
+
+    const bodyPayload = {
+      plan: plan || "solo",
+      mode: mode || "softpay",
+      country: (country || "CM").toUpperCase(),
+      network: network || "mtn_cm",
+    };
+    if (phoneClean) {
+      bodyPayload.phone = phoneClean;
+    }
+    if (estOriginPublicHttps) {
+      bodyPayload.return_url = `${origin}/abonnement.html?retour_saspay=1`;
+    }
 
     const response = await fetch(functionUrl, {
       method: "POST",
@@ -36,14 +52,7 @@ const SasPayClient = {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({
-        plan: plan || "solo",
-        mode: mode || "softpay",
-        country: country || "CM",
-        network: network || "mtn_cm",
-        phone: phone || "",
-        return_url: `${window.location.origin}/abonnement.html?retour_saspay=1`,
-      }),
+      body: JSON.stringify(bodyPayload),
     });
 
     const result = await response.json().catch(() => null);

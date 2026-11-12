@@ -29,13 +29,14 @@ function extraireChiffres(chaine) {
  */
 function normaliserTelephone(saisie, codePays) {
   const pays = (typeof PAYS !== 'undefined' && PAYS[codePays]) ? PAYS[codePays] : null;
+  const estEn = typeof Lang !== 'undefined' && Lang.get() === 'en';
 
   if (!pays) {
     return {
       valide: false,
       telephoneE164: '',
       numeroNational: '',
-      erreur: 'Pays non pris en charge.'
+      erreur: estEn ? 'Country not supported.' : 'Pays non pris en charge.'
     };
   }
 
@@ -46,7 +47,7 @@ function normaliserTelephone(saisie, codePays) {
       valide: false,
       telephoneE164: '',
       numeroNational: '',
-      erreur: 'Veuillez saisir votre numéro de téléphone.'
+      erreur: estEn ? 'Please enter a phone number.' : 'Veuillez saisir votre numéro de téléphone.'
     };
   }
 
@@ -59,37 +60,30 @@ function normaliserTelephone(saisie, codePays) {
 
   // Règle du zéro initial selon le pays
   if (!pays.garderZero) {
-    // Cas du Cameroun : pas de zéro initial
     if (chiffres.startsWith('0')) {
       chiffres = chiffres.replace(/^0+/, '');
     }
-  } else {
-    // Cas Côte d'Ivoire (10 chiffres) et Congo (9 chiffres) : le zéro initial fait partie du numéro
-    // Si l'utilisateur a omis le 0 par habitude mais a saisi (longueur - 1) chiffres, on le rajoute automatiquement
-    if (!chiffres.startsWith('0') && chiffres.length === pays.longueur - 1) {
-      chiffres = '0' + chiffres;
-    }
+  } else if (chiffres.length === pays.longueur - 1 && !chiffres.startsWith('0') && (codePays === 'CI' || codePays === 'CG')) {
+    chiffres = '0' + chiffres;
   }
 
-  // Vérification de la longueur exacte
-  if (chiffres.length !== pays.longueur) {
-    const pluriel = pays.longueur > 1 ? 'chiffres' : 'chiffre';
-    let detail = '';
-    if (codePays === 'CI') {
-      detail = ' (nouveau plan à 10 chiffres débutant par 0)';
-    } else if (codePays === 'CM') {
-      detail = ' (9 chiffres sans 0 initial)';
-    }
+  const longueursOk = Array.isArray(pays.longueursAcceptees) && pays.longueursAcceptees.length > 0
+    ? pays.longueursAcceptees
+    : [pays.longueur];
 
+  if (!longueursOk.includes(chiffres.length)) {
+    const pluriel = pays.longueur > 1 ? 'chiffres' : 'chiffre';
+    const nomPays = typeof obtenirNomPays === 'function' ? obtenirNomPays(pays) : pays.nom;
     return {
       valide: false,
       telephoneE164: '',
       numeroNational: chiffres,
-      erreur: `Numéro invalide pour ${pays.nom} : ${pays.longueur} ${pluriel} attendus${detail}.`
+      erreur: estEn
+        ? `Invalid number for ${nomPays}: ${pays.longueur} digits expected (e.g. ${pays.exemple}).`
+        : `Numéro invalide pour ${nomPays} : ${pays.longueur} ${pluriel} attendus (ex: ${pays.exemple}).`
     };
   }
 
-  // Format international E.164 sans espaces : ex +237670123456 ou +2250712345678
   const telephoneE164 = `+${pays.indicatif}${chiffres}`;
 
   return {
@@ -97,6 +91,43 @@ function normaliserTelephone(saisie, codePays) {
     telephoneE164,
     numeroNational: chiffres,
     erreur: null
+  };
+}
+
+/**
+ * Formate automatiquement le contact téléphonique d'un client avec l'indicatif de son pays
+ * (détecte automatiquement si le numéro saisi contient déjà un autre indicatif).
+ */
+function normaliserContactClient(saisie, codePaysParDefaut = 'CM') {
+  const brut = (saisie || '').toString().trim();
+  if (!brut) return { telephone: '', codePays: codePaysParDefaut || 'CM' };
+
+  const detecte = (typeof detecterPaysDepuisNumero === 'function')
+    ? detecterPaysDepuisNumero(brut)
+    : null;
+  const codeFinal = detecte ? detecte.codePays : ((typeof PAYS !== 'undefined' && PAYS[codePaysParDefaut]) ? codePaysParDefaut : 'CM');
+
+  const norm = normaliserTelephone(brut, codeFinal);
+  if (norm.valide) {
+    return { telephone: norm.telephoneE164, codePays: codeFinal };
+  }
+
+  const pays = (typeof PAYS !== 'undefined' && PAYS[codeFinal]) ? PAYS[codeFinal] : null;
+  if (!pays) return { telephone: brut, codePays: codeFinal };
+
+  let chiffres = extraireChiffres(brut);
+  if (chiffres.startsWith('00' + pays.indicatif)) {
+    chiffres = chiffres.substring(2 + pays.indicatif.length);
+  } else if (chiffres.startsWith(pays.indicatif) && chiffres.length > pays.indicatif.length + 5) {
+    chiffres = chiffres.substring(pays.indicatif.length);
+  }
+  if (!pays.garderZero && chiffres.startsWith('0') && chiffres.length >= 8) {
+    chiffres = chiffres.replace(/^0+/, '');
+  }
+
+  return {
+    telephone: chiffres ? `+${pays.indicatif}${chiffres}` : '',
+    codePays: codeFinal
   };
 }
 
@@ -193,6 +224,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     extraireChiffres,
     normaliserTelephone,
+    normaliserContactClient,
     fabriquerEmailInterne,
     evaluerForceMotDePasse,
     formaterFCFA,

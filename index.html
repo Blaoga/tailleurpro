@@ -15,8 +15,86 @@
 
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
-  <link rel="stylesheet" href="base.css">
-  <link rel="stylesheet" href="landing.css">
+
+  <style>
+    /* Protection mobile critique & affichage dark immédiat */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      background-color: #080D29 !important;
+      color: #FFFFFF !important;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .skip-link {
+      position: absolute !important;
+      left: -9999px !important;
+      top: -9999px !important;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .hero-couture-accents {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+    .ornament-tape-corner {
+      position: absolute;
+      top: 56px;
+      left: -10px;
+      width: 88px;
+      max-width: 88px;
+      height: auto;
+      opacity: 0.72;
+    }
+    .ornament-spool-top {
+      position: absolute;
+      top: 52px;
+      right: 6px;
+      width: 44px;
+      max-width: 44px;
+      height: auto;
+      opacity: 0.82;
+    }
+    .showcase-shears-art {
+      width: 84px;
+      max-width: 84px;
+      height: auto;
+      display: block;
+      margin: 0 auto -6px;
+    }
+    .showcase-thread-accent {
+      width: 82%;
+      max-width: 320px;
+      height: auto;
+      margin: 8px auto 0;
+      display: block;
+    }
+    .hero-pattern-lines {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    @media (max-width: 600px) {
+      .hero-section { padding: 48px 0 36px; position: relative; overflow: hidden; }
+      .hero-copy { max-width: 100%; padding: 0 16px; }
+      .hero-title { font-size: 1.85rem; line-height: 1.18; }
+      .hero-subtitle { font-size: 0.94rem; line-height: 1.45; }
+      .hero-actions { display: flex; flex-direction: column; width: 100%; max-width: 320px; gap: 10px; margin: 16px auto 0; }
+      .hero-actions .btn { width: 100%; justify-content: center; }
+      .app-showcase-frame { width: 100%; max-width: 390px; margin: 20px auto 0; }
+      .features-grid-clean, .pricing-grid, .steps-grid { grid-template-columns: 1fr !important; }
+      .feature-item-card, .pricing-card, .faq-item { width: 100%; }
+      .faq-question { width: 100%; text-align: left; }
+    }
+  </style>
 </head>
 <body class="landing-page" id="accueil">
 
@@ -52,7 +130,14 @@
         <a href="inscription.html" class="btn btn-luminous btn-sm">Commencer</a>
       </div>
 
-      <button type="button" class="hamburger-btn" id="hamburgerBtn" aria-label="Ouvrir le menu de navigation" aria-expanded="false" aria-controls="mobileNavDrawer">
+      <div class="header-mobile-right">
+        <button type="button" class="lang-toggle-btn" id="btnLangToggleLanding" onclick="if(window.Lang)Lang.toggle()" aria-label="Changer la langue">
+          <span data-lang-choice="fr" class="active">FR</span>
+          <span class="lang-sep">|</span>
+          <span data-lang-choice="en">EN</span>
+        </button>
+
+        <button type="button" class="hamburger-btn" id="hamburgerBtn" aria-label="Ouvrir le menu de navigation" aria-expanded="false" aria-controls="mobileNavDrawer">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -630,6 +715,7 @@
   <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
   <script src="js/pays.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/landing.js"></script>
 </body>
 </html>

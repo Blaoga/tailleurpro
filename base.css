@@ -359,6 +359,73 @@ p {
   width: 100%;
 }
 
+.country-select-wrap {
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+.country-select-wrap .form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.select-chevron-indicator {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--violet-600);
+  pointer-events: none;
+}
+
+.lang-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.lang-toggle-btn:hover {
+  border-color: rgba(182, 92, 255, 0.55);
+  background: rgba(120, 56, 216, 0.2);
+  color: #FFFFFF;
+}
+
+.lang-toggle-btn [data-lang-choice] {
+  opacity: 0.58;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.lang-toggle-btn [data-lang-choice].active {
+  opacity: 1;
+  color: #DFC0FF;
+}
+
+.lang-toggle-btn .lang-sep {
+  opacity: 0.35;
+  font-weight: 400;
+}
+
 .form-input:focus, .form-select:focus {
   border-color: var(--violet-600);
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);

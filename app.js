@@ -23,6 +23,8 @@ const App = {
   activeTab: 'accueil',
   activeOrderFilter: 'toutes',
   activeClientSearch: '',
+  activeNotifFilter: 'toutes',
+  _notifsCourantes: [],
 
   async init(session) {
     this.session = session;
@@ -44,22 +46,13 @@ const App = {
    * Liaison des événements globaux (Navigation, FAB, etc.)
    */
   bindGlobalEvents() {
-    // Gestion du thème (Sombre violet luxe / Clair plein soleil)
-    const btnTheme = document.getElementById('btnToggleTheme');
-    const themeIcon = document.getElementById('themeIcon');
-    const themeMem = localStorage.getItem('tailleurpro_theme');
-
-    if (themeMem === 'light') {
-      document.body.classList.add('theme-light');
-      if (themeIcon) themeIcon.textContent = '🌙';
+    // Thème sombre bleu nuit unique (aligné sur le landing page)
+    document.body.classList.remove('theme-light');
+    try {
+      localStorage.removeItem('tailleurpro_theme');
+    } catch (_) {
+      // Stockage local indisponible
     }
-
-    btnTheme?.addEventListener('click', () => {
-      const estClair = document.body.classList.toggle('theme-light');
-      if (themeIcon) themeIcon.textContent = estClair ? '🌙' : '☀️';
-      localStorage.setItem('tailleurpro_theme', estClair ? 'light' : 'dark');
-      App.showToast(estClair ? 'Mode plein soleil activé ☀️' : 'Mode sombre activé 🌙');
-    });
 
     // Onglets de navigation basse
     document.querySelectorAll('.nav-tab-item').forEach(btn => {
@@ -67,6 +60,39 @@ const App = {
         const tab = btn.dataset.tab;
         this.afficherOnglet(tab);
       });
+    });
+
+    // Recherche client (enregistrée une seule fois)
+    document.getElementById('clientSearchInput')?.addEventListener('input', (e) => {
+      this.activeClientSearch = e.target.value.toLowerCase().trim();
+      this.renderClients();
+    });
+
+    // Détection automatique de l'indicatif pays sur le téléphone client
+    document.getElementById('clientTelInput')?.addEventListener('input', (e) => {
+      if (typeof detecterPaysDepuisNumero !== 'function') return;
+      const detecte = detecterPaysDepuisNumero(e.target.value);
+      const sel = document.getElementById('clientPaysTelSelect');
+      if (detecte && sel && sel.value !== detecte.code) {
+        sel.value = detecte.code;
+        this.mettreAJourPlaceholderTelClient();
+      }
+    });
+
+    document.getElementById('clientPaysTelSelect')?.addEventListener('change', () => {
+      this.mettreAJourPlaceholderTelClient();
+    });
+
+    // Langue FR / EN
+    if (window.Lang) Lang.init();
+    window.addEventListener('tailleurpro:langchange', () => {
+      this.actualiserEntete();
+      this.renderAccueil();
+      this.renderClients();
+      this.renderCommandes();
+      this.renderFinances();
+      this.renderReglages();
+      this.mettreAJourPlaceholderTelClient();
     });
 
     // FAB Action Sheet
@@ -77,11 +103,15 @@ const App = {
       if (e.target === sheetOverlay) sheetOverlay.classList.remove('active');
     });
 
-    // Déconnexion
-    document.getElementById('btnDeconnexion')?.addEventListener('click', async () => {
-      if (confirm("Voulez-vous vous déconnecter de Tailleur Pro ?")) {
-        await Auth.deconnecter();
-      }
+    // Déconnexion (dans le tiroir paramètres)
+    document.getElementById('btnDeconnexion')?.addEventListener('click', () => {
+      this.deconnecterAtelier();
+    });
+
+    // Fermeture du tiroir paramètres 3 traits sur clic arrière-plan
+    const settingsDrawer = document.getElementById('drawerParametresMenu');
+    settingsDrawer?.addEventListener('click', (e) => {
+      if (e.target === settingsDrawer) this.fermerMenuParametres();
     });
 
     // Fermeture des modales sur clic arrière-plan ou bouton croix
@@ -91,6 +121,15 @@ const App = {
           modal.classList.remove('active');
         }
       });
+    });
+
+    // Touche Échap pour fermer les tiroirs et modales actifs
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      sheetOverlay?.classList.remove('active');
+      this.fermerMenuParametres();
+      this.fermerNotifications();
+      document.querySelectorAll('.app-modal-overlay.active').forEach(m => m.classList.remove('active'));
     });
   },
 
@@ -117,7 +156,38 @@ const App = {
     if (tabNom === 'clients') this.renderClients();
     if (tabNom === 'commandes') this.renderCommandes();
     if (tabNom === 'finances') this.renderFinances();
-    if (tabNom === 'reglages') this.renderReglages();
+    if (tabNom === 'reglages') {
+      this.fermerPageReglage();
+      this.renderReglages();
+    }
+    this.mettreAJourBadgeNotifications();
+  },
+
+  async deconnecterAtelier() {
+    this.fermerMenuParametres();
+    if (confirm("Voulez-vous vous déconnecter de Tailleur Pro ?")) {
+      await Auth.deconnecter();
+    }
+  },
+
+  formaterNomAtelierAffichage(profil, prenomOverride = '') {
+    const prenom = (prenomOverride || profil?.prenom || this.session?.user?.user_metadata?.prenom || 'Tailleur').trim();
+    const brut = profil?.atelier ? String(profil.atelier).trim() : '';
+    if (!brut || brut.toLowerCase() === 'mon atelier') {
+      return `Atelier de ${prenom}`;
+    }
+    return brut;
+  },
+
+  formaterStatutCommande(statut) {
+    const statutsMap = {
+      'recue': 'Reçue',
+      'coupee': 'Coupée',
+      'en_couture': 'En couture',
+      'prete': 'Prête',
+      'livree': 'Livrée'
+    };
+    return statutsMap[statut] || (statut ? statut.replace('_', ' ') : '');
   },
 
   /**
@@ -125,20 +195,22 @@ const App = {
    */
   actualiserEntete() {
     const profil = Store.cache.profil;
-    const prenom = profil?.prenom || this.session.user.user_metadata?.prenom || 'Tailleur';
-    const atelier = profil?.atelier || 'Mon Atelier';
+    const prenom = profil?.prenom || this.session?.user?.user_metadata?.prenom || 'Tailleur';
+    const atelier = this.formaterNomAtelierAffichage(profil, prenom);
 
     const nameEl = document.getElementById('userNameDisplay');
     const atelierEl = document.getElementById('userAtelierDisplay');
     const avatarEl = document.getElementById('userAvatarInitials');
 
-    if (nameEl) nameEl.textContent = `Bonjour, ${prenom} 👋`;
+    if (nameEl) nameEl.textContent = `Bonjour, ${prenom}`;
     if (atelierEl) atelierEl.textContent = atelier;
     if (avatarEl) {
       const initiales = prenom.substring(0, 2).toUpperCase();
       const span = avatarEl.querySelector('span');
       if (span) span.textContent = initiales;
     }
+
+    this.synchroniserMenuParametres();
   },
 
   /**
@@ -150,7 +222,7 @@ const App = {
 
     if (estNouveau && banner) {
       banner.style.display = 'flex';
-      this.showToast("🎉 Inscription réussie ! Bienvenue dans votre atelier.");
+      this.showToast("Inscription réussie ! Bienvenue dans votre atelier.");
     }
   },
 
@@ -173,13 +245,13 @@ const App = {
     const stats = Store.getDashboardStats();
     const profil = Store.cache.profil;
 
-    // 1. Barre des jours d'essai restants ou abonnement actif
+    // 1. Masquer les bannières d'abonnement sur l'Accueil (n'afficher la capsule que si l'essai est expiré)
     const trialDaysText = document.getElementById('trialDaysText');
     const trialBanner = document.getElementById('trialBanner');
     const trialCtaBtn = trialBanner ? trialBanner.querySelector('.trial-cta-btn') : null;
     const trialSubText = trialBanner ? trialBanner.querySelector('.trial-sub-text') : null;
 
-    if (profil) {
+    if (profil && trialBanner) {
       const maintenant = new Date();
       const essaiFin = profil.essai_fin ? new Date(profil.essai_fin) : null;
       const abonnementFin = profil.abonnement_fin ? new Date(profil.abonnement_fin) : null;
@@ -187,40 +259,31 @@ const App = {
       const aAbonnementActif = Boolean(abonnementFin && abonnementFin > maintenant);
       const aEssaiActif = Boolean(essaiFin && essaiFin > maintenant);
 
-      if (aAbonnementActif) {
-        if (trialDaysText) trialDaysText.textContent = "Abonnement Pro Actif ⭐";
-        if (trialSubText) trialSubText.textContent = `Accès illimité · Valable jusqu'au ${formaterDateFr(profil.abonnement_fin)}`;
-        if (trialCtaBtn) trialCtaBtn.textContent = "Prolonger ⭐";
-        trialBanner?.classList.remove('warning', 'expired');
-        trialBanner?.classList.add('pro-active');
-      } else if (aEssaiActif) {
-        const jours = calculerJoursRestants(profil.essai_fin);
-        if (trialDaysText) trialDaysText.textContent = `Période d'essai actif (${jours} jour${jours > 1 ? 's' : ''} restant${jours > 1 ? 's' : ''})`;
-        if (trialSubText) trialSubText.textContent = "Accès illimité aux fiches, mesures & rappels";
-        if (trialCtaBtn) trialCtaBtn.textContent = "Passer Pro ⭐";
-        trialBanner?.classList.remove('pro-active', 'expired');
-        if (jours <= 3) {
-          trialBanner?.classList.add('warning');
-        } else {
-          trialBanner?.classList.remove('warning');
-        }
+      if (aAbonnementActif || aEssaiActif) {
+        trialBanner.style.display = 'none';
+        trialBanner.classList.remove('warning', 'expired', 'pro-active');
       } else {
+        trialBanner.style.display = '';
         if (trialDaysText) trialDaysText.textContent = "Période d'essai terminée (15 jours expirés)";
-        if (trialSubText) trialSubText.textContent = "Abonnez-vous pour créer et modifier vos commandes";
-        if (trialCtaBtn) trialCtaBtn.textContent = "S'abonner 🔒";
-        trialBanner?.classList.remove('pro-active');
-        trialBanner?.classList.add('warning', 'expired');
+        if (trialSubText) trialSubText.textContent = "Activez votre abonnement depuis les réglages pour continuer";
+        if (trialCtaBtn) trialCtaBtn.textContent = "Activer →";
+        trialBanner.classList.remove('pro-active');
+        trialBanner.classList.add('warning', 'expired');
       }
     }
 
-    // 2. Bandeau d'alerte livraisons (Retards ou Demain)
+    // 2. Bandeau d'alerte livraisons (Retards ou Demain) + mise à jour du badge cloche
+    this.mettreAJourBadgeNotifications();
+
     const alertBox = document.getElementById('homeAlertBannerBox');
     if (alertBox) {
       if (stats.commandesEnRetard.length > 0) {
         alertBox.innerHTML = `
-          <div class="alert-banner danger" onclick="App.filtrerCommandes('en_retard')">
-            <span>⚠️</span>
-            <div><strong>${stats.commandesEnRetard.length} commande(s) en retard</strong> (cliquez pour voir)</div>
+          <div class="alert-glow-card danger" onclick="App.filtrerCommandes('en_retard')">
+            <span class="alert-glow-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <div class="alert-glow-text"><strong>${stats.commandesEnRetard.length} commande(s) en retard</strong> <span>Voir &rarr;</span></div>
           </div>
         `;
       } else if (stats.commandesDemain.length > 0) {
@@ -228,9 +291,11 @@ const App = {
         const client = Store.getClientParId(premiere.client_id);
         const nomClient = client ? client.nom : 'Client';
         alertBox.innerHTML = `
-          <div class="alert-banner warning" onclick="App.ouvrirDetailCommande('${premiere.id}')">
-            <span>🔔</span>
-            <div><strong>Demain :</strong> ${echapperHTML(premiere.vetement)} pour ${echapperHTML(nomClient)}</div>
+          <div class="alert-glow-card warning" onclick="App.ouvrirDetailCommande('${premiere.id}')">
+            <span class="alert-glow-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+            <div class="alert-glow-text"><strong>Livraison demain :</strong> ${echapperHTML(premiere.vetement)} &middot; ${echapperHTML(nomClient)}</div>
           </div>
         `;
       } else {
@@ -255,28 +320,395 @@ const App = {
       const recentes = Store.cache.commandes.slice(0, 4);
       if (recentes.length === 0) {
         recentList.innerHTML = `
-          <div style="text-align: center; padding: 24px 12px; color: var(--texte-doux); font-size: 0.9rem;">
-            Aucune commande pour l'instant.<br>
-            <button class="btn btn-outline-violet" style="margin-top: 10px; min-height: 38px;" onclick="App.ouvrirModalNouvelleCommande()">+ Créer une commande</button>
+          <div class="home-empty-card">
+            <div class="home-empty-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <p class="home-empty-text">Aucune commande enregistrée pour l'instant.</p>
+            <button type="button" class="btn btn-outline-violet home-empty-btn" onclick="App.ouvrirModalNouvelleCommande()">+ Créer une commande</button>
           </div>
         `;
       } else {
         recentList.innerHTML = recentes.map(cmd => {
           const client = Store.getClientParId(cmd.client_id);
           const nomClient = client ? client.nom : 'Client';
+          const statutLabel = this.formaterStatutCommande(cmd.statut);
           return `
-            <div class="order-card-item" onclick="App.ouvrirDetailCommande('${cmd.id}')">
+            <div class="order-card-item order-card-item--compact" onclick="App.ouvrirDetailCommande('${cmd.id}')">
               <div class="order-card-top">
-                <div>
+                <div class="order-card-identity">
                   <div class="order-card-client-name">${echapperHTML(nomClient)}</div>
                   <div class="order-card-garment">${echapperHTML(cmd.vetement)}</div>
                 </div>
-                <span class="status-pill-badge ${cmd.statut}">${cmd.statut.replace('_', ' ')}</span>
+                <span class="status-pill-badge ${cmd.statut}">${echapperHTML(statutLabel)}</span>
               </div>
             </div>
           `;
         }).join('');
       }
+    }
+  },
+
+  /* ==========================================================================
+     CENTRE DE NOTIFICATIONS & MENU PARAMÈTRES « TROIS TRAITS »
+     ========================================================================== */
+  ecartJoursCalendaires(dateStr) {
+    if (!dateStr) return null;
+    const match = /^\d{4}-\d{2}-\d{2}/.exec(String(dateStr));
+    const aujourdHui = new Date();
+    aujourdHui.setHours(0, 0, 0, 0);
+
+    let cible;
+    if (match) {
+      const [y, m, d] = match[0].split('-').map(Number);
+      cible = new Date(y, m - 1, d);
+    } else {
+      cible = new Date(dateStr);
+      if (isNaN(cible.getTime())) return null;
+      cible.setHours(0, 0, 0, 0);
+    }
+    return Math.round((cible.getTime() - aujourdHui.getTime()) / (1000 * 60 * 60 * 24));
+  },
+
+  getNotificationsLues() {
+    try {
+      const brut = localStorage.getItem('tailleurpro_notifs_lues');
+      const liste = brut ? JSON.parse(brut) : [];
+      return Array.isArray(liste) ? liste : [];
+    } catch (_) {
+      return [];
+    }
+  },
+
+  enregistrerNotificationsLues(ids) {
+    try {
+      const uniques = Array.from(new Set(ids)).slice(-120);
+      localStorage.setItem('tailleurpro_notifs_lues', JSON.stringify(uniques));
+    } catch (_) {
+      // Stockage local indisponible
+    }
+  },
+
+  construireNotifications() {
+    const notifications = [];
+    const profil = Store.cache.profil;
+    const rappelJours = Number(profil?.rappel_jours) || 2;
+    const commandes = Array.isArray(Store.cache.commandes) ? Store.cache.commandes : [];
+    const lues = new Set(this.getNotificationsLues());
+
+    // 1. Alertes de retard ou échéances dans la fenêtre de rappel configurée
+    commandes.forEach(cmd => {
+      if (cmd.statut === 'livree') return;
+      const client = Store.getClientParId(cmd.client_id);
+      const nomClient = client ? client.nom : 'Client';
+      const ecart = this.ecartJoursCalendaires(cmd.date_livraison);
+
+      if (ecart !== null && ecart < 0) {
+        const retard = Math.abs(ecart);
+        const id = `late-${cmd.id}-${cmd.date_livraison || ''}`;
+        notifications.push({
+          id,
+          type: 'urgent',
+          categorie: 'urgentes',
+          tag: `Retard ${retard} j`,
+          titre: `Livraison en retard · ${nomClient}`,
+          message: `${cmd.vetement} était prévue le ${formaterDateFr(cmd.date_livraison)}.`,
+          meta: `Statut : ${this.formaterStatutCommande(cmd.statut)}`,
+          priorite: 1,
+          lue: lues.has(id),
+          actionType: 'commande',
+          cibleId: cmd.id
+        });
+      } else if (ecart !== null && ecart <= rappelJours) {
+        const tag = ecart === 0 ? "Aujourd'hui" : ecart === 1 ? 'Demain' : `Dans ${ecart} j`;
+        const id = `due-${cmd.id}-${cmd.date_livraison || ''}`;
+        notifications.push({
+          id,
+          type: 'warning',
+          categorie: 'urgentes',
+          tag,
+          titre: `Échéance proche · ${nomClient}`,
+          message: `${cmd.vetement} à livrer ${ecart === 0 ? "aujourd'hui" : ecart === 1 ? 'demain' : `dans ${ecart} jours`} (${formaterDateFr(cmd.date_livraison)}).`,
+          meta: `Rappel J-${rappelJours} actif`,
+          priorite: 2,
+          lue: lues.has(id),
+          actionType: 'commande',
+          cibleId: cmd.id
+        });
+      }
+
+      // 2. Commandes terminées prêtes à être remises
+      if (cmd.statut === 'prete') {
+        const reste = Store.getResteDuPourCommande(cmd.id);
+        const id = `ready-${cmd.id}`;
+        notifications.push({
+          id,
+          type: 'info',
+          categorie: 'atelier',
+          tag: 'Prête',
+          titre: `Prête à livrer · ${nomClient}`,
+          message: `${cmd.vetement} terminée${reste > 0 ? ` · Solde restant : ${formaterFCFA(reste)}` : ' · Intégralement soldée'}.`,
+          meta: 'Appuyez pour ouvrir la fiche commande',
+          priorite: 3,
+          lue: lues.has(id),
+          actionType: 'commande',
+          cibleId: cmd.id
+        });
+      }
+
+      // 3. Soldes clients restants à encaisser
+      const reste = Store.getResteDuPourCommande(cmd.id);
+      if (reste > 0) {
+        const id = `debt-${cmd.id}-${reste}`;
+        notifications.push({
+          id,
+          type: 'payment',
+          categorie: 'paiements',
+          tag: 'À encaisser',
+          titre: `Reste dû · ${nomClient}`,
+          message: `${formaterFCFA(reste)} en attente sur « ${cmd.vetement} ».`,
+          meta: 'Enregistrer un versement',
+          priorite: 4,
+          lue: lues.has(id),
+          actionType: 'commande',
+          cibleId: cmd.id
+        });
+      }
+    });
+
+    // 4. Alerte essai gratuit expiré ou proche de la fin
+    if (profil) {
+      const maintenant = new Date();
+      const abonnementFin = profil.abonnement_fin ? new Date(profil.abonnement_fin) : null;
+      const essaiFin = profil.essai_fin ? new Date(profil.essai_fin) : null;
+      const aAbonnementActif = Boolean(abonnementFin && abonnementFin > maintenant);
+
+      if (!aAbonnementActif) {
+        const joursEssai = essaiFin ? calculerJoursRestants(profil.essai_fin) : 0;
+        if (joursEssai !== null && joursEssai <= 0) {
+          const id = 'trial-expired';
+          notifications.push({
+            id,
+            type: 'account',
+            categorie: 'urgentes',
+            tag: 'Essai expiré',
+            titre: "Période d'essai terminée",
+            message: "Activez votre abonnement pour continuer à enregistrer de nouveaux clients et commandes.",
+            meta: 'Formules dès 2 600 FCFA / mois',
+            priorite: 1,
+            lue: lues.has(id),
+            actionType: 'abonnement',
+            cibleId: null
+          });
+        } else if (joursEssai !== null && joursEssai <= 3) {
+          const id = `trial-soon-${joursEssai}`;
+          notifications.push({
+            id,
+            type: 'account',
+            categorie: 'urgentes',
+            tag: `${joursEssai} j restants`,
+            titre: 'Essai gratuit bientôt terminé',
+            message: `Il reste ${joursEssai} jour${joursEssai > 1 ? 's' : ''} sur votre essai offert. Passez Pro pour éviter toute interruption.`,
+            meta: 'Accès abonnement',
+            priorite: 2,
+            lue: lues.has(id),
+            actionType: 'abonnement',
+            cibleId: null
+          });
+        }
+      }
+    }
+
+    notifications.sort((a, b) => (Number(a.lue) - Number(b.lue)) || (a.priorite - b.priorite));
+    this._notifsCourantes = notifications;
+    return notifications;
+  },
+
+  mettreAJourBadgeNotifications() {
+    const notifications = this.construireNotifications();
+    const nonLues = notifications.filter(n => !n.lue);
+    const dot = document.getElementById('headerAlertDot');
+    const drawerBadge = document.getElementById('drawerNotifBadge');
+    const modalBadge = document.getElementById('notifUnreadBadge');
+
+    if (dot) {
+      dot.style.display = nonLues.length > 0 ? 'block' : 'none';
+    }
+    if (drawerBadge) {
+      drawerBadge.textContent = String(nonLues.length);
+      drawerBadge.classList.toggle('is-zero', nonLues.length === 0);
+    }
+    if (modalBadge) {
+      modalBadge.textContent = String(nonLues.length);
+      modalBadge.classList.toggle('is-zero', nonLues.length === 0);
+    }
+  },
+
+  getNotificationIconSvg(type) {
+    const icons = {
+      urgent: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      warning: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      payment: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+      account: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+    };
+    return icons[type] || icons.info;
+  },
+
+  ouvrirNotifications() {
+    this.fermerMenuParametres();
+    this.renderNotifications();
+    document.getElementById('modalNotifications')?.classList.add('active');
+  },
+
+  fermerNotifications() {
+    document.getElementById('modalNotifications')?.classList.remove('active');
+  },
+
+  filtrerNotifications(filtre) {
+    this.activeNotifFilter = filtre;
+    document.querySelectorAll('#notifFilterTabs .notif-filter-pill').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.notifFilter === filtre);
+    });
+    this.renderNotifications();
+  },
+
+  renderNotifications() {
+    this.mettreAJourBadgeNotifications();
+    const container = document.getElementById('notificationsListContainer');
+    const markAllBtn = document.getElementById('btnMarkAllNotifsRead');
+    if (!container) return;
+
+    const toutes = this._notifsCourantes;
+    const nonLuesCount = toutes.filter(n => !n.lue).length;
+    if (markAllBtn) {
+      markAllBtn.disabled = nonLuesCount === 0;
+    }
+
+    const filtrees = this.activeNotifFilter === 'toutes'
+      ? toutes
+      : toutes.filter(n => n.categorie === this.activeNotifFilter);
+
+    if (filtrees.length === 0) {
+      container.innerHTML = `
+        <div class="notif-empty-state">
+          <div class="notif-empty-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <strong>Aucune notification</strong>
+          <p>${this.activeNotifFilter === 'toutes' ? 'Toutes vos livraisons et suivis sont à jour.' : 'Aucune alerte dans cette catégorie.'}</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtrees.map(item => {
+      const idx = toutes.indexOf(item);
+      return `
+        <button type="button" class="notif-card-item ${item.lue ? '' : 'unread'}" onclick="App.executerNotification(${idx})">
+          <div class="notif-icon-box ${item.type}" aria-hidden="true">
+            ${this.getNotificationIconSvg(item.type)}
+          </div>
+          <div class="notif-card-body">
+            <div class="notif-card-top">
+              <div class="notif-card-title">${!item.lue ? '<span class="notif-unread-dot" aria-hidden="true"></span>' : ''}${echapperHTML(item.titre)}</div>
+              <span class="notif-severity-tag ${item.type}">${echapperHTML(item.tag)}</span>
+            </div>
+            <div class="notif-card-msg">${echapperHTML(item.message)}</div>
+            <div class="notif-card-meta">
+              <span>${echapperHTML(item.meta)}</span>
+              <span>Ouvrir &rarr;</span>
+            </div>
+          </div>
+        </button>
+      `;
+    }).join('');
+  },
+
+  executerNotification(idx) {
+    const item = this._notifsCourantes[idx];
+    if (!item) return;
+
+    const lues = this.getNotificationsLues();
+    if (!lues.includes(item.id)) {
+      lues.push(item.id);
+      this.enregistrerNotificationsLues(lues);
+    }
+
+    this.fermerNotifications();
+    this.mettreAJourBadgeNotifications();
+
+    if (item.actionType === 'commande' && item.cibleId) {
+      this.ouvrirDetailCommande(item.cibleId);
+    } else if (item.actionType === 'abonnement') {
+      window.location.href = 'abonnement.html';
+    }
+  },
+
+  toutMarquerNotificationsLues() {
+    if (!this._notifsCourantes.length) return;
+    const lues = this.getNotificationsLues();
+    this._notifsCourantes.forEach(n => lues.push(n.id));
+    this.enregistrerNotificationsLues(lues);
+    this.renderNotifications();
+    this.showToast("Toutes les notifications sont marquées comme lues.");
+  },
+
+  ouvrirMenuParametres() {
+    this.fermerNotifications();
+    this.synchroniserMenuParametres();
+    this.mettreAJourBadgeNotifications();
+    document.getElementById('drawerParametresMenu')?.classList.add('active');
+  },
+
+  fermerMenuParametres() {
+    document.getElementById('drawerParametresMenu')?.classList.remove('active');
+  },
+
+  synchroniserMenuParametres() {
+    const profil = Store.cache.profil;
+    const prenom = profil?.prenom || this.session?.user?.user_metadata?.prenom || 'Tailleur';
+    const atelier = this.formaterNomAtelierAffichage(profil, prenom);
+    const ville = profil?.ville ? ` · ${profil.ville}` : '';
+
+    const avatarEl = document.getElementById('drawerAvatarInitials');
+    const nameEl = document.getElementById('drawerAtelierNom');
+    const metaEl = document.getElementById('drawerAtelierMeta');
+    const planEl = document.getElementById('drawerPlanBadge');
+    const rappelEl = document.getElementById('drawerRappelJours');
+
+    if (avatarEl) avatarEl.textContent = prenom.substring(0, 2).toUpperCase();
+    if (nameEl) nameEl.textContent = atelier;
+    if (metaEl) metaEl.textContent = `${prenom}${ville}`;
+    if (rappelEl) rappelEl.value = String(Number(profil?.rappel_jours) || 2);
+
+    if (planEl && profil) {
+      const maintenant = new Date();
+      const abonnementFin = profil.abonnement_fin ? new Date(profil.abonnement_fin) : null;
+      const essaiFin = profil.essai_fin ? new Date(profil.essai_fin) : null;
+      if (abonnementFin && abonnementFin > maintenant) {
+        planEl.textContent = 'Abonnement Pro actif';
+      } else if (essaiFin && essaiFin > maintenant) {
+        const j = calculerJoursRestants(profil.essai_fin);
+        planEl.textContent = `Essai gratuit (${j} j restant${j > 1 ? 's' : ''})`;
+      } else {
+        planEl.textContent = 'Essai expiré · Activer';
+      }
+    }
+  },
+
+  async changerRappelRapide(jours) {
+    const valeur = Number(jours) || 2;
+    const reglageSelect = document.getElementById('reglageRappelJours');
+    if (reglageSelect) reglageSelect.value = String(valeur);
+
+    try {
+      await Store.updateProfil({ rappel_jours: valeur });
+      this.renderAccueil();
+      this.showToast(`Rappel réglé à ${valeur} jour${valeur > 1 ? 's' : ''} avant livraison.`);
+    } catch (err) {
+      this.showToast("Erreur lors de la mise à jour du rappel.");
+      console.error('[App] changerRappelRapide :', err);
     }
   },
 
@@ -304,38 +736,50 @@ const App = {
      ========================================================================== */
   renderClients() {
     const listEl = document.getElementById('clientsListContainer');
-    const searchInput = document.getElementById('clientSearchInput');
+    const countBadge = document.getElementById('clientsCountBadge');
     if (!listEl) return;
 
-    searchInput?.addEventListener('input', (e) => {
-      this.activeClientSearch = e.target.value.toLowerCase().trim();
-      this.renderClients();
-    });
+    const tousClients = Store.getClients();
+    if (countBadge) countBadge.textContent = String(tousClients.length);
 
-    let clients = Store.getClients();
-
+    let clients = tousClients;
     if (this.activeClientSearch) {
-      clients = clients.filter(c => 
+      clients = tousClients.filter(c =>
         c.nom.toLowerCase().includes(this.activeClientSearch) ||
-        c.telephone.includes(this.activeClientSearch)
+        (c.telephone || '').toLowerCase().includes(this.activeClientSearch)
       );
     }
 
     if (clients.length === 0) {
       listEl.innerHTML = `
-        <div style="text-align: center; padding: 32px 12px; color: var(--texte-doux);">
-          ${this.activeClientSearch ? 'Aucun client trouvé pour cette recherche.' : 'Aucun client enregistré pour l\'instant.'}
-          <div style="margin-top: 12px;">
-            <button class="btn btn-primary" onclick="App.ouvrirModalNouveauClient()">+ Ajouter un client</button>
+        <div class="home-empty-card">
+          <div class="home-empty-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
+          <p class="home-empty-text">
+            ${this.activeClientSearch ? 'Aucun client trouvé pour cette recherche.' : 'Aucun client enregistré pour le moment.'}
+          </p>
+          ${this.activeClientSearch
+            ? `<button type="button" class="btn btn-outline-violet home-empty-btn" onclick="document.getElementById('clientSearchInput').value=''; App.activeClientSearch=''; App.renderClients();">Effacer la recherche</button>`
+            : `<button type="button" class="btn btn-outline-violet home-empty-btn" onclick="App.ouvrirModalNouveauClient()">+ Ajouter un client</button>`
+          }
         </div>
       `;
       return;
     }
 
     listEl.innerHTML = clients.map(client => {
-      const initiales = client.nom.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-      
+      const initiales = client.nom
+        .trim()
+        .split(/\s+/)
+        .map(n => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase() || 'CL';
+
+      const nbMesures = this.extraireMesuresClient(client.mesures).length;
+      const mesuresMeta = nbMesures > 0 ? `${nbMesures} mesure${nbMesures > 1 ? 's' : ''}` : 'Sans mesures';
+
       // Calcul dette client
       let dette = 0;
       Store.cache.commandes.filter(c => c.client_id === client.id && c.statut !== 'livree').forEach(cmd => {
@@ -345,13 +789,16 @@ const App = {
       return `
         <div class="client-card-item" onclick="App.ouvrirFicheClient('${client.id}')">
           <div class="client-avatar-name">
-            <div class="client-avatar-circle">${initiales}</div>
+            <div class="client-avatar-circle">${echapperHTML(initiales)}</div>
             <div class="client-info-meta">
               <span class="client-name-text">${echapperHTML(client.nom)}</span>
-              <span class="client-phone-text">${client.telephone || 'Sans numéro'}</span>
+              <span class="client-phone-text">${echapperHTML(client.telephone || 'Sans numéro')} &middot; ${mesuresMeta}</span>
             </div>
           </div>
-          ${dette > 0 ? `<span class="debt-pill-badge">Doit ${formaterFCFA(dette)}</span>` : '<span style="font-size: 0.8rem; color: var(--succes);">À jour ✓</span>'}
+          ${dette > 0
+            ? `<span class="debt-pill-badge">Doit ${formaterFCFA(dette)}</span>`
+            : `<span class="paid-pill-badge">À jour</span>`
+          }
         </div>
       `;
     }).join('');
@@ -566,74 +1013,535 @@ const App = {
   },
 
   /* ==========================================================================
-     5. RENDU DES RÉGLAGES (Section 8.5)
+     5. RENDU DES RÉGLAGES (RUBRIQUES REPLIABLES)
      ========================================================================== */
+  fermerPageReglage() {
+    const mainMenu = document.getElementById('settingsMainMenuView');
+    const detailView = document.getElementById('settingsDetailPageView');
+    if (mainMenu) mainMenu.style.display = '';
+    if (detailView) detailView.style.display = 'none';
+    document.querySelectorAll('#settingsDetailPageView .settings-subpage-panel').forEach(panel => {
+      panel.classList.remove('active');
+    });
+  },
+
+  ouvrirPageReglage(cle) {
+    if (cle === 'abonnement') {
+      window.location.href = 'abonnement.html';
+      return;
+    }
+
+    const titres = {
+      profil: 'Profil personnel',
+      atelier: "Nom de l'atelier",
+      rappels: 'Rappels de livraison',
+      mesures: 'Mesures personnalisées',
+      notifications: 'Notifications et alertes',
+      sauvegarde: 'Sauvegarde des données',
+      compte: 'Compte & mentions légales'
+    };
+
+    const mainMenu = document.getElementById('settingsMainMenuView');
+    const detailView = document.getElementById('settingsDetailPageView');
+    const titleEl = document.getElementById('settingsSubpageTitle');
+    const targetPanel = document.querySelector(`#settingsDetailPageView .settings-subpage-panel[data-settings-page="${cle}"]`);
+    if (!targetPanel) return;
+
+    document.querySelectorAll('#settingsDetailPageView .settings-subpage-panel').forEach(panel => {
+      panel.classList.remove('active');
+    });
+    targetPanel.classList.add('active');
+
+    if (titleEl) titleEl.textContent = titres[cle] || 'Paramètre';
+    if (mainMenu) mainMenu.style.display = 'none';
+    if (detailView) detailView.style.display = '';
+
+    if (cle === 'mesures') {
+      this.renderModeleMesuresDansReglages();
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  renderModeleMesuresDansReglages() {
+    const listEl = document.getElementById('reglagesModeleListe');
+    const subEl = document.getElementById('subReglageMesures');
+    const modele = this.getModeleMesuresAtelier();
+
+    if (subEl) {
+      subEl.textContent = modele.length > 0
+        ? `Modèle personnel · ${modele.length} mesure${modele.length > 1 ? 's' : ''}`
+        : 'Aucune mesure enregistrée en modèle';
+    }
+
+    if (!listEl) return;
+    if (modele.length === 0) {
+      listEl.innerHTML = `<span class="settings-body-desc">Votre modèle est vide. Ajoutez vos mesures habituelles ci-dessus si vous souhaitez les réutiliser en un clic.</span>`;
+      return;
+    }
+
+    listEl.innerHTML = modele.map((nom, idx) => `
+      <span class="settings-template-tag">
+        <span>${echapperHTML(nom)}</span>
+        <button type="button" aria-label="Retirer ${echapperHTML(nom)}" onclick="App.supprimerMesureModeleDepuisReglages(${idx})">&times;</button>
+      </span>
+    `).join('');
+  },
+
+  ajouterMesureModeleDepuisReglages() {
+    const input = document.getElementById('reglageNouvelleMesureInput');
+    const nom = input?.value.trim();
+    if (!nom) {
+      this.showToast("Saisissez d'abord le nom d'une mesure.");
+      input?.focus();
+      return;
+    }
+
+    const modele = this.getModeleMesuresAtelier();
+    if (modele.some(m => m.toLowerCase() === nom.toLowerCase())) {
+      this.showToast("Cette mesure est déjà dans votre modèle.");
+      return;
+    }
+
+    modele.push(nom);
+    try {
+      localStorage.setItem('tailleurpro_mesures_modele', JSON.stringify(modele));
+      if (input) input.value = '';
+      this.renderModeleMesuresDansReglages();
+      this.mettreAJourEtatMesuresUI();
+      this.showToast(`« ${nom} » ajoutée à votre modèle.`);
+    } catch (_) {
+      this.showToast("Impossible d'enregistrer sur cet appareil.");
+    }
+  },
+
+  supprimerMesureModeleDepuisReglages(index) {
+    const modele = this.getModeleMesuresAtelier();
+    if (index < 0 || index >= modele.length) return;
+    modele.splice(index, 1);
+    try {
+      localStorage.setItem('tailleurpro_mesures_modele', JSON.stringify(modele));
+      this.renderModeleMesuresDansReglages();
+      this.mettreAJourEtatMesuresUI();
+      this.showToast("Mesure retirée du modèle.");
+    } catch (_) {
+      // Stockage indisponible
+    }
+  },
+
+  reinitialiserAlertesLues() {
+    try {
+      localStorage.removeItem('tailleurpro_notifs_lues');
+    } catch (_) {
+      // Stockage indisponible
+    }
+    this.mettreAJourBadgeNotifications();
+    this.showToast("Toutes les alertes sont à nouveau actives.");
+  },
+
   renderReglages() {
     const profil = Store.cache.profil;
-    if (!profil) return;
+    if (profil) {
+      const prenom = profil.prenom || this.session?.user?.user_metadata?.prenom || 'Tailleur';
+      const atelierAffiche = this.formaterNomAtelierAffichage(profil, prenom);
+      const rappel = Number(profil.rappel_jours) || 2;
 
-    const prenomInput = document.getElementById('reglagePrenom');
-    const atelierInput = document.getElementById('reglageAtelier');
-    const villeInput = document.getElementById('reglageVille');
-    const telInput = document.getElementById('reglageTelephone');
-    const emailRecup = document.getElementById('reglageEmailRecup');
+      const prenomInput = document.getElementById('reglagePrenom');
+      const atelierInput = document.getElementById('reglageAtelier');
+      const villeInput = document.getElementById('reglageVille');
+      const emailRecup = document.getElementById('reglageEmailRecup');
+      const paysSelect = document.getElementById('reglagePays');
+      const rappelSelect = document.getElementById('reglageRappelJours');
 
-    if (prenomInput) prenomInput.value = profil.prenom || '';
-    if (atelierInput) atelierInput.value = profil.atelier || '';
-    if (villeInput) villeInput.value = profil.ville || '';
-    if (telInput) telInput.value = profil.telephone || '';
-    if (emailRecup) emailRecup.value = profil.email_recuperation || '';
+      if (prenomInput) prenomInput.value = profil.prenom || '';
+      if (atelierInput) {
+        const brut = profil.atelier ? String(profil.atelier).trim() : '';
+        atelierInput.value = brut.toLowerCase() === 'mon atelier' ? '' : brut;
+      }
+      if (villeInput) villeInput.value = profil.ville || '';
+      if (emailRecup) emailRecup.value = profil.email_recuperation || '';
+      if (paysSelect && typeof remplirSelectPays === 'function') {
+        const codePays = this.obtenirPaysParDefautAtelier();
+        remplirSelectPays(paysSelect, 'complet', codePays);
+      }
+      if (rappelSelect) rappelSelect.value = String(rappel);
 
-    // Rappels
-    const rappelSelect = document.getElementById('reglageRappelJours');
-    if (rappelSelect) rappelSelect.value = profil.rappel_jours || 2;
+      // En-tête résumé et sous-titres des rubriques repliées
+      const cardAvatar = document.getElementById('reglageCardAvatar');
+      const cardAtelier = document.getElementById('reglageCardAtelier');
+      const cardMeta = document.getElementById('reglageCardMeta');
+      const subProfil = document.getElementById('subReglageProfil');
+      const subAtelier = document.getElementById('subReglageAtelier');
+      const subRappels = document.getElementById('subReglageRappels');
+      const subPlan = document.getElementById('subReglagePlan');
+
+      if (cardAvatar) cardAvatar.textContent = prenom.substring(0, 2).toUpperCase();
+      if (cardAtelier) cardAtelier.textContent = atelierAffiche;
+      if (cardMeta) cardMeta.textContent = profil.ville ? `${prenom} · ${profil.ville}` : `${prenom} · Touchez une rubrique pour l'ouvrir`;
+      if (subProfil) subProfil.textContent = profil.ville ? `${prenom} · ${profil.ville}` : `${prenom} · Profil & récupération`;
+      if (subAtelier) subAtelier.textContent = atelierAffiche;
+      if (subRappels) subRappels.textContent = `Alerte ${rappel} jour${rappel > 1 ? 's' : ''} avant la livraison`;
+
+      const maintenant = new Date();
+      const abonnementFin = profil.abonnement_fin ? new Date(profil.abonnement_fin) : null;
+      const essaiFin = profil.essai_fin ? new Date(profil.essai_fin) : null;
+      if (abonnementFin && abonnementFin > maintenant) {
+        const dateFin = formaterDateFr(profil.abonnement_fin);
+        if (subPlan) subPlan.textContent = `Abonnement Pro actif jusqu'au ${dateFin}`;
+      } else if (essaiFin && essaiFin > maintenant) {
+        const j = calculerJoursRestants(profil.essai_fin);
+        if (subPlan) subPlan.textContent = `Essai gratuit · ${j} jour${j > 1 ? 's' : ''} restant${j > 1 ? 's' : ''}`;
+      } else {
+        if (subPlan) subPlan.textContent = 'Essai expiré · Activer un abonnement';
+      }
+    }
+
+    this.renderModeleMesuresDansReglages();
   },
 
   async enregistrerReglages() {
     const prenom = document.getElementById('reglagePrenom')?.value.trim();
-    const atelier = document.getElementById('reglageAtelier')?.value.trim();
+    const atelierSaisi = document.getElementById('reglageAtelier')?.value.trim();
     const ville = document.getElementById('reglageVille')?.value.trim();
+    const email_recuperation = document.getElementById('reglageEmailRecup')?.value.trim();
+    const pays = document.getElementById('reglagePays')?.value || this.obtenirPaysParDefautAtelier();
     const rappel_jours = Number(document.getElementById('reglageRappelJours')?.value) || 2;
 
     if (!prenom) {
-      alert("Le prénom ne peut pas être vide.");
+      this.showToast("Le prénom ne peut pas être vide.");
+      document.getElementById('reglagePrenom')?.focus();
       return;
     }
 
     try {
+      if (typeof memoriserPaysActif === 'function') memoriserPaysActif(pays);
       await Store.updateProfil({
         prenom,
-        atelier,
+        atelier: atelierSaisi || 'Mon Atelier',
         ville,
+        pays,
+        email_recuperation,
         rappel_jours
       });
       this.actualiserEntete();
-      this.showToast("Réglages enregistrés avec succès ✓");
+      this.renderReglages();
+      this.renderAccueil();
+      this.showToast("Réglages enregistrés avec succès.");
     } catch (err) {
       alert("Erreur lors de l'enregistrement : " + err.message);
     }
   },
 
   /* ==========================================================================
-     6. FENÊTRES MODALES (CLIENTS & COMMANDES)
+     6. FENÊTRES MODALES (CLIENTS & MESURES 100 % PERSONNALISABLES)
      ========================================================================== */
-  ajouterLigneMesureLibre(nom = '', valeur = '') {
+  extraireMesuresClient(mesuresObj, inclureVidesPersonnalisees = false) {
+    const m = mesuresObj || {};
+    const resultat = [];
+    const vus = new Set();
+
+    const anciensChamps = [
+      { key: 'epaules', label: 'Épaule' },
+      { key: 'poitrine', label: 'Poitrine' },
+      { key: 'taille_haut', fallback: 'taille', label: 'Taille' },
+      { key: 'bassin', fallback: 'hanches', label: 'Bassin / Hanches' },
+      { key: 'longueur_haut', fallback: 'longueur', label: 'Longueur' },
+      { key: 'longueur_manche', fallback: 'bras', label: 'Manche' },
+      { key: 'tour_bras', label: 'Tour de bras' },
+      { key: 'poignet', label: 'Poignet' },
+      { key: 'cou', label: 'Cou / Col' },
+      { key: 'rein', label: 'Tour de rein' },
+      { key: 'taille_bas', label: 'Taille (bas)' },
+      { key: 'longueur_pantalon', label: 'Pantalon' },
+      { key: 'cuisse', label: 'Cuisse' },
+      { key: 'genou', label: 'Genou' },
+      { key: 'tour_jambe', label: 'Bas pantalon' },
+      { key: 'fourche', label: 'Entrejambe' }
+    ];
+
+    // Compatibilité avec d'éventuelles anciennes fiches déjà enregistrées
+    anciensChamps.forEach(item => {
+      const val = m[item.key] || (item.fallback ? m[item.fallback] : '');
+      const propre = val !== null && val !== undefined ? String(val).trim() : '';
+      if (propre) {
+        const cleNorm = item.label.toLowerCase();
+        if (!vus.has(cleNorm)) {
+          vus.add(cleNorm);
+          resultat.push({ label: item.label, valeur: propre });
+        }
+      }
+    });
+
+    if (Array.isArray(m.personnalisees)) {
+      m.personnalisees.forEach(p => {
+        const nom = p?.nom ? String(p.nom).trim() : '';
+        const valeur = p?.valeur !== null && p?.valeur !== undefined ? String(p.valeur).trim() : '';
+        if (nom && (inclureVidesPersonnalisees || valeur !== '')) {
+          const cleNorm = nom.toLowerCase();
+          if (!vus.has(cleNorm)) {
+            vus.add(cleNorm);
+            resultat.push({ label: nom, valeur });
+          }
+        }
+      });
+    }
+
+    return resultat;
+  },
+
+  mettreAJourEtatMesuresUI() {
+    const rows = Array.from(document.querySelectorAll('#mesuresPersonnaliseesContainer .custom-measure-row'));
+    const emptyHint = document.getElementById('mesuresEmptyHint');
+    if (emptyHint) {
+      emptyHint.style.display = rows.length === 0 ? 'block' : 'none';
+    }
+
+    const nomsSaisis = new Set(
+      rows
+        .map(r => r.querySelector('.custom-measure-name')?.value.trim().toLowerCase())
+        .filter(Boolean)
+    );
+
+    document.querySelectorAll('#mesuresQuickChips .measure-chip-btn').forEach(btn => {
+      const label = (btn.dataset.measureChip || '').toLowerCase();
+      btn.classList.toggle('is-used', nomsSaisis.has(label));
+    });
+
+    const btnCharger = document.getElementById('btnChargerModeleMesures');
+    if (btnCharger) {
+      btnCharger.style.display = this.getModeleMesuresAtelier().length > 0 ? 'inline-block' : 'none';
+    }
+  },
+
+  getModeleMesuresAtelier() {
+    try {
+      const brut = localStorage.getItem('tailleurpro_mesures_modele');
+      const liste = brut ? JSON.parse(brut) : [];
+      return Array.isArray(liste) ? liste.filter(n => typeof n === 'string' && n.trim()) : [];
+    } catch (_) {
+      return [];
+    }
+  },
+
+  enregistrerModeleMesures() {
+    const noms = Array.from(document.querySelectorAll('#mesuresPersonnaliseesContainer .custom-measure-name'))
+      .map(el => el.value.trim())
+      .filter(Boolean);
+
+    if (noms.length === 0) {
+      this.showToast("Ajoutez d'abord au moins une mesure à garder en modèle.");
+      return;
+    }
+
+    try {
+      const uniques = Array.from(new Set(noms));
+      localStorage.setItem('tailleurpro_mesures_modele', JSON.stringify(uniques));
+      this.mettreAJourEtatMesuresUI();
+      this.showToast(`Modèle enregistré (${uniques.length} mesure${uniques.length > 1 ? 's' : ''}).`);
+    } catch (_) {
+      this.showToast("Impossible d'enregistrer ce modèle sur cet appareil.");
+    }
+  },
+
+  appliquerModeleMesures() {
+    const modele = this.getModeleMesuresAtelier();
+    if (modele.length === 0) {
+      this.showToast("Aucun modèle personnel enregistré pour le moment.");
+      return;
+    }
+
+    const existants = new Set(
+      Array.from(document.querySelectorAll('#mesuresPersonnaliseesContainer .custom-measure-name'))
+        .map(el => el.value.trim().toLowerCase())
+        .filter(Boolean)
+    );
+
+    let ajouts = 0;
+    modele.forEach(nom => {
+      if (!existants.has(nom.toLowerCase())) {
+        this.ajouterLigneMesureLibre(nom, '', false);
+        ajouts += 1;
+      }
+    });
+
+    this.mettreAJourEtatMesuresUI();
+    this.showToast(ajouts > 0 ? `${ajouts} mesure${ajouts > 1 ? 's' : ''} ajoutée${ajouts > 1 ? 's' : ''} depuis votre modèle.` : 'Votre modèle est déjà affiché.');
+  },
+
+  ajouterMesureDepuisRaccourci(nomMesure) {
+    const rows = Array.from(document.querySelectorAll('#mesuresPersonnaliseesContainer .custom-measure-row'));
+    const existante = rows.find(r => r.querySelector('.custom-measure-name')?.value.trim().toLowerCase() === nomMesure.toLowerCase());
+
+    if (existante) {
+      const valInput = existante.querySelector('.custom-measure-val');
+      valInput?.focus();
+      valInput?.select?.();
+      return;
+    }
+
+    // Remplit d'abord une éventuelle ligne encore vide si l'utilisateur vient de cliquer sur + Ajouter
+    const ligneVide = rows.find(r => !r.querySelector('.custom-measure-name')?.value.trim() && !r.querySelector('.custom-measure-val')?.value.trim());
+    if (ligneVide) {
+      const nomEl = ligneVide.querySelector('.custom-measure-name');
+      const valEl = ligneVide.querySelector('.custom-measure-val');
+      if (nomEl) nomEl.value = nomMesure;
+      this.mettreAJourEtatMesuresUI();
+      valEl?.focus();
+      return;
+    }
+
+    this.ajouterLigneMesureLibre(nomMesure, '', true);
+  },
+
+  collecterMesuresPersonnalisees() {
+    const customRows = document.querySelectorAll('#mesuresPersonnaliseesContainer .custom-measure-row');
+    const personnalisees = [];
+    for (const row of customRows) {
+      const nameEl = row.querySelector('.custom-measure-name');
+      const valEl = row.querySelector('.custom-measure-val');
+      const nomMesure = nameEl?.value.trim() || '';
+      const valMesure = valEl?.value.trim() || '';
+
+      if (!nomMesure && valMesure) {
+        this.showToast("Donnez un nom à chaque mesure saisie.");
+        nameEl?.focus();
+        return null;
+      }
+
+      if (nomMesure) {
+        personnalisees.push({ nom: nomMesure, valeur: valMesure });
+      }
+    }
+    return personnalisees;
+  },
+
+  async confirmerLigneMesureLibre(row) {
+    if (!row) return;
+    const nameEl = row.querySelector('.custom-measure-name');
+    const valEl = row.querySelector('.custom-measure-val');
+    const saveBtn = row.querySelector('.btn-save-custom-measure');
+    const nomMesure = nameEl?.value.trim() || '';
+    const valMesure = valEl?.value.trim() || '';
+
+    if (!nomMesure) {
+      this.showToast("Indiquez le nom de la mesure avant d'enregistrer.");
+      nameEl?.focus();
+      return;
+    }
+    if (!valMesure) {
+      this.showToast("Indiquez la valeur en cm pour confirmer cette mesure.");
+      valEl?.focus();
+      return;
+    }
+
+    row.classList.add('is-confirmed');
+    if (saveBtn) {
+      saveBtn.classList.add('is-saved');
+      saveBtn.textContent = '✓ Enregistrée';
+    }
+
+    const id = document.getElementById('clientIdInput')?.value || '';
+    const nomClient = document.getElementById('clientNomInput')?.value?.trim() || '';
+
+    if (id && nomClient && Store.estCompteActif()) {
+      const personnalisees = this.collecterMesuresPersonnalisees();
+      if (!personnalisees) return;
+      try {
+        await Store.saveClient({
+          id,
+          nom: nomClient,
+          telephone: document.getElementById('clientTelInput')?.value || '',
+          mesures: {
+            personnalisees,
+            mode: 'personnalise',
+            datePrise: new Date().toISOString()
+          },
+          notes: document.getElementById('clientNotesInput')?.value || ''
+        });
+        this.renderClients();
+        this.renderAccueil();
+        this.showToast(`✓ Mesure "${nomMesure}" enregistrée (${valMesure} cm).`);
+        return;
+      } catch (err) {
+        this.showToast("Erreur d'enregistrement : " + (err.message || "Réessayez."));
+        return;
+      }
+    }
+
+    this.showToast(`✓ Mesure "${nomMesure}" confirmée (${valMesure} cm).`);
+  },
+
+  ajouterLigneMesureLibre(nom = '', valeur = '', autoFocus = false, estDejaEnregistree = false) {
     const container = document.getElementById('mesuresPersonnaliseesContainer');
     if (!container) return;
 
+    const estConfirmee = Boolean(estDejaEnregistree && String(nom).trim());
     const row = document.createElement('div');
-    row.className = 'custom-measure-row';
+    row.className = estConfirmee ? 'custom-measure-row is-confirmed' : 'custom-measure-row';
     row.innerHTML = `
-      <input type="text" class="form-input custom-measure-name" placeholder="Nom (ex: Fente, Traîne...)" value="${echapperHTML(nom)}" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
-      <input type="number" step="0.5" class="form-input custom-measure-val" placeholder="cm" value="${echapperHTML(valeur)}" style="background:rgba(255,255,255,0.08); color:#FFF; border-color:rgba(167,139,250,0.25);">
-      <button type="button" class="btn-remove-custom-measure" title="Supprimer">&times;</button>
+      <input type="text" class="form-input modal-dark-input custom-measure-name" placeholder="Nom (ex: Épaule, Manche...)" value="${echapperHTML(nom)}">
+      <div class="measure-val-unit-wrap">
+        <input type="number" step="0.5" min="0" inputmode="decimal" class="form-input modal-dark-input custom-measure-val" placeholder="0" value="${echapperHTML(valeur)}">
+        <span class="measure-unit-tag" aria-hidden="true">cm</span>
+      </div>
+      <button type="button" class="btn-save-custom-measure${estConfirmee ? ' is-saved' : ''}" aria-label="Enregistrer cette mesure" title="Confirmer cette mesure">${estConfirmee ? '✓ Enregistrée' : 'Enregistrer'}</button>
+      <button type="button" class="btn-remove-custom-measure" aria-label="Supprimer cette mesure" title="Supprimer">&times;</button>
     `;
 
-    row.querySelector('.btn-remove-custom-measure').addEventListener('click', () => {
+    const nameInput = row.querySelector('.custom-measure-name');
+    const valInput = row.querySelector('.custom-measure-val');
+    const saveBtn = row.querySelector('.btn-save-custom-measure');
+
+    const marquerCommeAModifier = () => {
+      if (row.classList.contains('is-confirmed')) {
+        row.classList.remove('is-confirmed');
+      }
+      if (saveBtn) {
+        saveBtn.classList.remove('is-saved');
+        saveBtn.textContent = 'Enregistrer';
+      }
+    };
+
+    nameInput?.addEventListener('input', () => {
+      marquerCommeAModifier();
+      this.mettreAJourEtatMesuresUI();
+    });
+    valInput?.addEventListener('input', () => {
+      marquerCommeAModifier();
+    });
+    saveBtn?.addEventListener('click', () => this.confirmerLigneMesureLibre(row));
+    row.querySelector('.btn-remove-custom-measure')?.addEventListener('click', () => {
       row.remove();
+      this.mettreAJourEtatMesuresUI();
     });
 
     container.appendChild(row);
+    this.mettreAJourEtatMesuresUI();
+
+    if (autoFocus) {
+      if (nom) {
+        valInput?.focus();
+      } else {
+        nameInput?.focus();
+      }
+    }
+  },
+
+  obtenirPaysParDefautAtelier() {
+    const code = (
+      Store.cache?.profil?.pays ||
+      this.session?.user?.user_metadata?.pays ||
+      (typeof obtenirPaysActif === 'function' ? obtenirPaysActif().code : 'CM')
+    ).toUpperCase();
+    return (typeof PAYS !== 'undefined' && PAYS[code]) ? code : 'CM';
+  },
+
+  mettreAJourPlaceholderTelClient() {
+    const sel = document.getElementById('clientPaysTelSelect');
+    const inp = document.getElementById('clientTelInput');
+    if (!sel || !inp || typeof PAYS === 'undefined') return;
+    const p = PAYS[sel.value] || PAYS_PAR_DEFAUT;
+    inp.placeholder = `Ex: ${p.exemple}`;
   },
 
   ouvrirModalNouveauClient() {
@@ -649,14 +1557,22 @@ const App = {
     const idInput = document.getElementById('clientIdInput');
     if (idInput) idInput.value = '';
 
+    const paysSel = document.getElementById('clientPaysTelSelect');
+    if (paysSel && typeof remplirSelectPays === 'function') {
+      remplirSelectPays(paysSel, 'compact', this.obtenirPaysParDefautAtelier());
+    }
+    this.mettreAJourPlaceholderTelClient();
+
     const titre = document.getElementById('titreModalClient');
-    if (titre) titre.textContent = 'Nouveau Client';
+    if (titre) titre.textContent = window.Lang ? Lang.t('Nouveau client', 'New Client') : 'Nouveau client';
 
     const btnSubmit = document.getElementById('btnSubmitClient');
-    if (btnSubmit) btnSubmit.textContent = 'Enregistrer le client & mesures';
+    if (btnSubmit) btnSubmit.textContent = window.Lang ? Lang.t('Enregistrer le client', 'Save client') : 'Enregistrer le client';
 
+    // Toujours vide par défaut : aucune mesure automatique imposée
     const container = document.getElementById('mesuresPersonnaliseesContainer');
     if (container) container.innerHTML = '';
+    this.mettreAJourEtatMesuresUI();
 
     modal?.classList.add('active');
   },
@@ -665,43 +1581,22 @@ const App = {
     e.preventDefault();
     const id = document.getElementById('clientIdInput')?.value || null;
     const nom = document.getElementById('clientNomInput')?.value;
-    const telephone = document.getElementById('clientTelInput')?.value;
+    const telephoneBrut = document.getElementById('clientTelInput')?.value || '';
+    const codePaysClient = document.getElementById('clientPaysTelSelect')?.value || this.obtenirPaysParDefautAtelier();
+    let telephone = telephoneBrut.trim();
+    if (telephone && typeof normaliserContactClient === 'function') {
+      const contactNorm = normaliserContactClient(telephone, codePaysClient);
+      telephone = contactNorm.telephone || telephone;
+    }
     const notes = document.getElementById('clientNotesInput')?.value;
 
-    // Récupération des mesures personnalisées
-    const customRows = document.querySelectorAll('#mesuresPersonnaliseesContainer .custom-measure-row');
-    const personnalisees = [];
-    customRows.forEach(row => {
-      const nomMesure = row.querySelector('.custom-measure-name')?.value.trim();
-      const valMesure = row.querySelector('.custom-measure-val')?.value.trim();
-      if (nomMesure) {
-        personnalisees.push({ nom: nomMesure, valeur: valMesure });
-      }
-    });
+    // Récupération des mesures libres saisies par l'utilisateur
+    const personnalisees = this.collecterMesuresPersonnalisees();
+    if (!personnalisees) return;
 
     const mesures = {
-      // Haut du corps
-      epaules: document.getElementById('mesureEpaules')?.value.trim() || '',
-      poitrine: document.getElementById('mesurePoitrine')?.value.trim() || '',
-      taille_haut: document.getElementById('mesureTailleHaut')?.value.trim() || '',
-      bassin: document.getElementById('mesureBassin')?.value.trim() || '',
-      longueur_haut: document.getElementById('mesureLongueurHaut')?.value.trim() || '',
-      longueur_manche: document.getElementById('mesureLongueurManche')?.value.trim() || '',
-      tour_bras: document.getElementById('mesureTourBras')?.value.trim() || '',
-      poignet: document.getElementById('mesurePoignet')?.value.trim() || '',
-      cou: document.getElementById('mesureCou')?.value.trim() || '',
-
-      // Bas du corps
-      rein: document.getElementById('mesureRein')?.value.trim() || '',
-      taille_bas: document.getElementById('mesureTailleBas')?.value.trim() || '',
-      longueur_pantalon: document.getElementById('mesureLongueurPantalon')?.value.trim() || '',
-      cuisse: document.getElementById('mesureCuisse')?.value.trim() || '',
-      genou: document.getElementById('mesureGenou')?.value.trim() || '',
-      tour_jambe: document.getElementById('mesureTourJambe')?.value.trim() || '',
-      fourche: document.getElementById('mesureFourche')?.value.trim() || '',
-
-      // Mesures libres
       personnalisees,
+      mode: 'personnalise',
       datePrise: new Date().toISOString()
     };
 
@@ -712,7 +1607,7 @@ const App = {
       }
       await Store.saveClient({ id, nom, telephone, mesures, notes });
       document.getElementById('modalNouveauClient')?.classList.remove('active');
-      this.showToast(id ? "Client et mesures mis à jour ✓" : "Client et mesures enregistrés ✓");
+      this.showToast(id ? "Client et mesures mis à jour." : "Client enregistré avec succès.");
       this.renderClients();
       this.renderAccueil();
     } catch (err) {
@@ -746,109 +1641,28 @@ const App = {
     if (btnAppel) btnAppel.href = numNettoye ? `tel:${numNettoye}` : '#';
     if (btnWA) btnWA.href = numNettoye ? `https://wa.me/${numNettoye}` : '#';
 
-    // Rendu des mesures détaillées
-    const m = client.mesures || {};
-    
-    // Haut
-    const hautLabels = [
-      { key: 'epaules', label: 'Épaules / Carrure' },
-      { key: 'poitrine', label: 'Tour Poitrine' },
-      { key: 'taille_haut', fallback: 'taille', label: 'Tour Taille / Ventre' },
-      { key: 'bassin', fallback: 'hanches', label: 'Bassin / Hanches' },
-      { key: 'longueur_haut', fallback: 'longueur', label: 'Longueur Vêtement' },
-      { key: 'longueur_manche', fallback: 'bras', label: 'Longueur Manche' },
-      { key: 'tour_bras', label: 'Tour Bras / Biceps' },
-      { key: 'poignet', label: 'Tour Poignet' },
-      { key: 'cou', label: 'Tour de Cou' }
-    ];
-
-    // Bas
-    const basLabels = [
-      { key: 'rein', label: 'Tour de Rein / Ceinture' },
-      { key: 'taille_bas', label: 'Tour de Taille (Bas)' },
-      { key: 'longueur_pantalon', label: 'Longueur Pantalon / Jambe' },
-      { key: 'cuisse', label: 'Tour de Cuisse' },
-      { key: 'genou', label: 'Tour de Genou' },
-      { key: 'tour_jambe', label: 'Bas Pantalon / Tour Jambe' },
-      { key: 'fourche', label: 'Entrejambe / Fourche' }
-    ];
-
-    const hautMesures = hautLabels
-      .map(item => {
-        const val = m[item.key] || (item.fallback ? m[item.fallback] : '');
-        return val ? { label: item.label, val } : null;
-      })
-      .filter(Boolean);
-
-    const basMesures = basLabels
-      .map(item => {
-        const val = m[item.key] || '';
-        return val ? { label: item.label, val } : null;
-      })
-      .filter(Boolean);
-
-    const persMesures = Array.isArray(m.personnalisees) ? m.personnalisees.filter(p => p.nom && p.valeur) : [];
+    // Rendu unifié des mesures personnalisées (et anciennes mesures éventuelles)
+    const listeMesures = this.extraireMesuresClient(client.mesures);
 
     if (mesuresBox) {
-      if (hautMesures.length === 0 && basMesures.length === 0 && persMesures.length === 0) {
+      if (listeMesures.length === 0) {
         mesuresBox.innerHTML = `
-          <div style="text-align:center; padding:16px; background:rgba(255,255,255,0.04); border-radius:12px; color:var(--violet-300); font-size:0.85rem;">
+          <div class="measurement-empty-guide">
             Aucune mesure enregistrée pour ce client.<br>
-            <button class="btn btn-outline-violet" style="margin-top:8px; min-height:32px; font-size:0.8rem;" onclick="App.editerClient('${client.id}')">+ Prendre les mesures</button>
+            <button type="button" class="btn btn-outline-violet fiche-mini-btn" style="margin-top:8px;" onclick="App.editerClient('${client.id}')">+ Ajouter des mesures</button>
           </div>
         `;
       } else {
-        let html = '';
-
-        if (hautMesures.length > 0) {
-          html += `
-            <div>
-              <div class="measurement-category-header">👕 Haut du Corps</div>
-              <div class="measurements-grid">
-                ${hautMesures.map(item => `
-                  <div class="measurement-pill-box">
-                    <label>${echapperHTML(item.label)}</label>
-                    <strong>${echapperHTML(item.val)} cm</strong>
-                  </div>
-                `).join('')}
+        mesuresBox.innerHTML = `
+          <div class="measurements-grid">
+            ${listeMesures.map(item => `
+              <div class="measurement-pill-box">
+                <label>${echapperHTML(item.label)}</label>
+                <strong>${echapperHTML(item.valeur)} cm</strong>
               </div>
-            </div>
-          `;
-        }
-
-        if (basMesures.length > 0) {
-          html += `
-            <div>
-              <div class="measurement-category-header">👖 Bas du Corps (Pantalon &amp; Rein)</div>
-              <div class="measurements-grid">
-                ${basMesures.map(item => `
-                  <div class="measurement-pill-box">
-                    <label>${echapperHTML(item.label)}</label>
-                    <strong>${echapperHTML(item.val)} cm</strong>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        if (persMesures.length > 0) {
-          html += `
-            <div>
-              <div class="measurement-category-header">➕ Autres Mesures Libres</div>
-              <div class="measurements-grid">
-                ${persMesures.map(item => `
-                  <div class="measurement-pill-box">
-                    <label>${echapperHTML(item.nom)}</label>
-                    <strong>${echapperHTML(item.valeur)} cm</strong>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        mesuresBox.innerHTML = html;
+            `).join('')}
+          </div>
+        `;
       }
     }
 
@@ -905,11 +1719,10 @@ const App = {
         recapEl.innerHTML = '';
       }
       listEl.innerHTML = `
-        <div style="text-align:center; padding:18px 12px; background:rgba(255,255,255,0.04); border-radius:14px; border:1px dashed rgba(167,139,250,0.25); color:var(--texte-doux); font-size:0.85rem;">
-          <div style="font-size:1.6rem; margin-bottom:4px;">🧵</div>
-          <strong style="color:var(--texte-blanc-doux); display:block; margin-bottom:4px;">Aucune commande enregistrée</strong>
+        <div class="measurement-empty-guide">
+          <strong style="display:block; margin-bottom:4px; color:var(--tp-white);">Aucune commande enregistrée</strong>
           <span>Ce client n'a pas encore de commande de confection.</span><br>
-          <button type="button" class="btn btn-outline-violet" style="margin-top:10px; min-height:34px; font-size:0.8rem; padding:0 14px;" onclick="App.ouvrirNouvelleCommandePourClient('${clientId}')">
+          <button type="button" class="btn btn-outline-violet fiche-mini-btn" style="margin-top:10px;" onclick="App.ouvrirNouvelleCommandePourClient('${clientId}')">
             + Enregistrer une première commande
           </button>
         </div>
@@ -933,17 +1746,17 @@ const App = {
       recapEl.innerHTML = `
         <div class="client-mini-recap-grid">
           <div class="client-mini-recap-item">
-            <span class="client-mini-recap-label">Total Commandes</span>
+            <span class="client-mini-recap-label">Commandes</span>
             <span class="client-mini-recap-val">${totalCmds}</span>
           </div>
           <div class="client-mini-recap-item">
-            <span class="client-mini-recap-label">Total Déjà Payé</span>
-            <span class="client-mini-recap-val" style="color:var(--succes);">${formaterFCFA(totalPaye)}</span>
+            <span class="client-mini-recap-label">Déjà payé</span>
+            <span class="client-mini-recap-val ok">${formaterFCFA(totalPaye)}</span>
           </div>
           <div class="client-mini-recap-item">
-            <span class="client-mini-recap-label">${totalDette > 0 ? 'Reste à Payer' : 'Solde Client'}</span>
+            <span class="client-mini-recap-label">${totalDette > 0 ? 'Reste dû' : 'Solde'}</span>
             <span class="client-mini-recap-val ${totalDette > 0 ? 'debt' : 'ok'}">
-              ${totalDette > 0 ? formaterFCFA(totalDette) : 'À jour ✓'}
+              ${totalDette > 0 ? formaterFCFA(totalDette) : 'À jour'}
             </span>
           </div>
         </div>
@@ -961,15 +1774,7 @@ const App = {
       const pct = prixTotal > 0 ? Math.min(Math.round((paye / prixTotal) * 100), 100) : 100;
       const estLivree = cmd.statut === 'livree';
 
-      // Libellé de statut
-      const statutsMap = {
-        'recue': 'Reçue',
-        'coupee': 'Coupée',
-        'en_couture': 'En couture',
-        'prete': 'Prête',
-        'livree': 'Livrée'
-      };
-      const statutLabel = statutsMap[cmd.statut] || cmd.statut.replace('_', ' ');
+      const statutLabel = this.formaterStatutCommande(cmd.statut);
 
       // Calcul compte à rebours date de livraison
       const jours = calculerJoursRestants(cmd.date_livraison);
@@ -979,18 +1784,18 @@ const App = {
 
       if (estLivree) {
         countdownClass = 'green';
-        countdownLabel = 'Livrée ✓';
+        countdownLabel = 'Livrée';
       } else if (jours < 0) {
         countdownClass = 'red';
-        countdownLabel = `${Math.abs(jours)} j de retard !`;
+        countdownLabel = `${Math.abs(jours)} j de retard`;
         borderModifierClass = 'is-retard';
       } else if (jours === 0) {
         countdownClass = 'red';
-        countdownLabel = "À livrer aujourd'hui !";
+        countdownLabel = "Aujourd'hui";
         borderModifierClass = 'is-retard';
       } else if (jours === 1) {
         countdownClass = 'orange';
-        countdownLabel = 'À livrer demain';
+        countdownLabel = 'Demain';
       } else if (jours <= 3) {
         countdownClass = 'orange';
         countdownLabel = `${jours} j restants`;
@@ -1001,49 +1806,48 @@ const App = {
       const dateLivraisonStr = cmd.date_livraison ? formaterDateFr(cmd.date_livraison) : '-';
 
       return `
-        <div class="client-order-history-card ${borderModifierClass}" onclick="App.ouvrirDetailCommandeDepuisFiche('${cmd.id}')" title="Cliquer pour afficher les détails et versements">
+        <div class="client-order-history-card ${borderModifierClass}" onclick="App.ouvrirDetailCommandeDepuisFiche('${cmd.id}')" title="Afficher les détails et versements">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
             <div style="min-width:0; flex:1;">
               <div class="order-card-garment-title">
-                <span>👔</span>
                 <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${echapperHTML(cmd.vetement)}</span>
               </div>
               ${cmd.tissu ? `
                 <div style="margin-top:4px;">
-                  <span class="order-card-fabric-tag">🧵 ${echapperHTML(cmd.tissu)}</span>
+                  <span class="order-card-fabric-tag">${echapperHTML(cmd.tissu)}</span>
                 </div>
               ` : ''}
             </div>
             <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
-              <span class="status-pill-badge ${cmd.statut}">${statutLabel}</span>
+              <span class="status-pill-badge ${cmd.statut}">${echapperHTML(statutLabel)}</span>
               <span class="countdown-badge ${countdownClass}" style="font-size:0.68rem; padding:2px 8px;">${countdownLabel}</span>
             </div>
           </div>
 
           <!-- Métadonnées de dates -->
-          <div class="order-card-dates-meta" style="margin-top:4px;">
-            <div>📅 Passée le : <strong>${dateCreeeStr}</strong></div>
-            <div>⏱️ Prévue le : <strong>${dateLivraisonStr}</strong></div>
+          <div class="order-card-dates-meta" style="margin-top:2px;">
+            <div>Passée le : <strong>${dateCreeeStr}</strong></div>
+            <div>Prévue le : <strong>${dateLivraisonStr}</strong></div>
           </div>
 
           <!-- Barre de progression financière -->
-          <div class="payment-progress-wrapper" style="margin-top:4px;">
+          <div class="payment-progress-wrapper" style="margin-top:2px;">
             <div class="payment-progress-track">
               <div class="payment-progress-fill" style="width: ${pct}%"></div>
             </div>
             <div class="payment-progress-labels">
               <span>Total : <strong>${formaterFCFA(prixTotal)}</strong></span>
-              <span>Déjà payé : <strong style="color:var(--succes);">${formaterFCFA(paye)}</strong></span>
+              <span>Payé : <strong style="color:#6EE7B7;">${formaterFCFA(paye)}</strong></span>
             </div>
           </div>
 
           <!-- Puce de solde et invitation au clic -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06);">
             ${reste > 0
-              ? `<span class="unpaid-alert-chip">⚠️ Reste : ${formaterFCFA(reste)}</span>`
-              : `<span class="paid-success-chip">✓ Intégralement soldé</span>`
+              ? `<span class="unpaid-alert-chip">Reste : ${formaterFCFA(reste)}</span>`
+              : `<span class="paid-success-chip">Soldée</span>`
             }
-            <span class="view-detail-hint">Détails &amp; versements →</span>
+            <span class="view-detail-hint">Détails &amp; versements &rarr;</span>
           </div>
         </div>
       `;
@@ -1054,7 +1858,7 @@ const App = {
     if (enCours.length > 0) {
       html += `
         <div class="client-history-group-header">
-          <span>⚙️ En cours de confection (${enCours.length})</span>
+          <span>En cours (${enCours.length})</span>
         </div>
         ${enCours.map(mapperCarteCommande).join('')}
       `;
@@ -1063,7 +1867,7 @@ const App = {
     if (terminees.length > 0) {
       html += `
         <div class="client-history-group-header" style="${enCours.length > 0 ? 'margin-top:10px;' : ''}">
-          <span>✅ Livrées &amp; Terminées (${terminees.length})</span>
+          <span>Livrées &amp; terminées (${terminees.length})</span>
         </div>
         ${terminees.map(mapperCarteCommande).join('')}
       `;
@@ -1099,49 +1903,43 @@ const App = {
     const titre = document.getElementById('titreModalClient');
     const btnSubmit = document.getElementById('btnSubmitClient');
 
-    if (titre) titre.textContent = 'Modifier le Client & Mesures';
+    if (titre) titre.textContent = 'Modifier le client et ses mesures';
     if (btnSubmit) btnSubmit.textContent = 'Enregistrer les modifications';
 
     // Remplir infos de base
     const idInput = document.getElementById('clientIdInput');
     if (idInput) idInput.value = client.id;
     document.getElementById('clientNomInput').value = client.nom || '';
-    document.getElementById('clientTelInput').value = client.telephone || '';
+
+    const paysSel = document.getElementById('clientPaysTelSelect');
+    const telBrut = client.telephone || '';
+    const paysDetecte = (typeof detecterPaysDepuisNumero === 'function') ? detecterPaysDepuisNumero(telBrut) : null;
+    const codeActif = paysDetecte ? paysDetecte.code : this.obtenirPaysParDefautAtelier();
+    if (paysSel && typeof remplirSelectPays === 'function') {
+      remplirSelectPays(paysSel, 'compact', codeActif);
+    }
+    let telAffichage = telBrut;
+    if (paysDetecte) {
+      const chiffres = typeof extraireChiffres === 'function' ? extraireChiffres(telBrut) : telBrut.replace(/\D/g, '');
+      telAffichage = chiffres.startsWith(paysDetecte.indicatif)
+        ? chiffres.slice(paysDetecte.indicatif.length)
+        : telBrut;
+    }
+    document.getElementById('clientTelInput').value = telAffichage;
+    this.mettreAJourPlaceholderTelClient();
     document.getElementById('clientNotesInput').value = client.notes || '';
 
-    const m = client.mesures || {};
-
-    // Remplir Haut du corps
-    document.getElementById('mesureEpaules').value = m.epaules || '';
-    document.getElementById('mesurePoitrine').value = m.poitrine || '';
-    document.getElementById('mesureTailleHaut').value = m.taille_haut || m.taille || '';
-    document.getElementById('mesureBassin').value = m.bassin || m.hanches || '';
-    document.getElementById('mesureLongueurHaut').value = m.longueur_haut || m.longueur || '';
-    document.getElementById('mesureLongueurManche').value = m.longueur_manche || m.bras || '';
-    document.getElementById('mesureTourBras').value = m.tour_bras || '';
-    document.getElementById('mesurePoignet').value = m.poignet || '';
-    document.getElementById('mesureCou').value = m.cou || '';
-
-    // Remplir Bas du corps
-    document.getElementById('mesureRein').value = m.rein || '';
-    document.getElementById('mesureTailleBas').value = m.taille_bas || '';
-    document.getElementById('mesureLongueurPantalon').value = m.longueur_pantalon || '';
-    document.getElementById('mesureCuisse').value = m.cuisse || '';
-    document.getElementById('mesureGenou').value = m.genou || '';
-    document.getElementById('mesureTourJambe').value = m.tour_jambe || '';
-    document.getElementById('mesureFourche').value = m.fourche || '';
-
-    // Lignes dynamiques
+    // Lignes de mesures personnalisées (et récupération transparente des anciens champs)
     const container = document.getElementById('mesuresPersonnaliseesContainer');
     if (container) {
       container.innerHTML = '';
-      if (Array.isArray(m.personnalisees)) {
-        m.personnalisees.forEach(p => {
-          this.ajouterLigneMesureLibre(p.nom, p.valeur);
-        });
-      }
+      const listeMesures = this.extraireMesuresClient(client.mesures, true);
+      listeMesures.forEach(item => {
+        this.ajouterLigneMesureLibre(item.label, item.valeur, false, true);
+      });
     }
 
+    this.mettreAJourEtatMesuresUI();
     modal?.classList.add('active');
   },
 
@@ -1151,73 +1949,23 @@ const App = {
 
     const profil = Store.cache.profil;
     const atelier = profil?.atelier ? ` - Atelier ${profil.atelier}` : '';
-    const m = client.mesures || {};
+    const listeMesures = this.extraireMesuresClient(client.mesures);
 
-    let texte = `📏 MESURES DE ${client.nom.toUpperCase()}${atelier}\n`;
-    if (client.telephone) texte += `📞 Tél : ${client.telephone}\n`;
+    let texte = `MESURES DE ${client.nom.toUpperCase()}${atelier}\n`;
+    if (client.telephone) texte += `Tél : ${client.telephone}\n`;
     texte += `------------------------------------\n`;
 
-    // Haut
-    const hautLabels = [
-      { key: 'epaules', label: 'Épaules / Carrure' },
-      { key: 'poitrine', label: 'Tour Poitrine' },
-      { key: 'taille_haut', fallback: 'taille', label: 'Tour Taille / Ventre' },
-      { key: 'bassin', fallback: 'hanches', label: 'Bassin / Hanches' },
-      { key: 'longueur_haut', fallback: 'longueur', label: 'Longueur Vêtement' },
-      { key: 'longueur_manche', fallback: 'bras', label: 'Longueur Manche' },
-      { key: 'tour_bras', label: 'Tour Bras / Biceps' },
-      { key: 'poignet', label: 'Tour Poignet' },
-      { key: 'cou', label: 'Tour de Cou' }
-    ];
-
-    const hautLignes = hautLabels
-      .map(item => {
-        const val = m[item.key] || (item.fallback ? m[item.fallback] : '');
-        return val ? `• ${item.label} : ${val} cm` : null;
-      })
-      .filter(Boolean);
-
-    if (hautLignes.length > 0) {
-      texte += `\n👕 HAUT DU CORPS :\n${hautLignes.join('\n')}\n`;
-    }
-
-    // Bas
-    const basLabels = [
-      { key: 'rein', label: 'Tour de Rein / Ceinture' },
-      { key: 'taille_bas', label: 'Tour de Taille (Bas)' },
-      { key: 'longueur_pantalon', label: 'Longueur Pantalon / Jambe' },
-      { key: 'cuisse', label: 'Tour de Cuisse' },
-      { key: 'genou', label: 'Tour de Genou' },
-      { key: 'tour_jambe', label: 'Bas Pantalon / Tour Jambe' },
-      { key: 'fourche', label: 'Entrejambe / Fourche' }
-    ];
-
-    const basLignes = basLabels
-      .map(item => {
-        const val = m[item.key] || '';
-        return val ? `• ${item.label} : ${val} cm` : null;
-      })
-      .filter(Boolean);
-
-    if (basLignes.length > 0) {
-      texte += `\n👖 BAS DU CORPS (PANTALON / REIN) :\n${basLignes.join('\n')}\n`;
-    }
-
-    // Mesures libres
-    if (Array.isArray(m.personnalisees) && m.personnalisees.length > 0) {
-      const persLignes = m.personnalisees
-        .filter(p => p.nom && p.valeur)
-        .map(p => `• ${p.nom} : ${p.valeur} cm`);
-      if (persLignes.length > 0) {
-        texte += `\n➕ AUTRES MESURES :\n${persLignes.join('\n')}\n`;
-      }
+    if (listeMesures.length > 0) {
+      texte += listeMesures.map(item => `• ${item.label} : ${item.valeur} cm`).join('\n') + '\n';
+    } else {
+      texte += `Aucune mesure enregistrée.\n`;
     }
 
     if (client.notes) {
-      texte += `\n📝 Notes : ${client.notes}\n`;
+      texte += `\nNotes : ${client.notes}\n`;
     }
 
-    texte += `\n✨ Enregistré avec Tailleur Pro`;
+    texte += `\nEnregistré avec Tailleur Pro`;
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1230,7 +1978,7 @@ const App = {
         document.execCommand('copy');
         document.body.removeChild(ta);
       }
-      this.showToast("Mesures copiées dans le presse-papier ! Prêt pour WhatsApp ✓");
+      this.showToast("Mesures copiées dans le presse-papier.");
     } catch (err) {
       alert("Impossible de copier automatiquement : " + err.message);
     }
@@ -1732,14 +2480,15 @@ const App = {
     const paye = Store.getTotalPayePourCommande(cmd.id);
     const reste = Store.getResteDuPourCommande(cmd.id);
 
-    const atelierNom = profil?.atelier || (profil?.prenom ? 'Atelier ' + profil.prenom : 'Atelier Tailleur Pro');
+    const atelierNom = this.formaterNomAtelierAffichage(profil);
     const atelierVille = profil?.ville ? ` · ${profil.ville}` : '';
     const atelierContact = profil?.telephone ? `Tél : ${profil.telephone}` : 'Atelier Haute Couture';
     const codeTicket = 'CMD-' + (cmd.id ? cmd.id.substring(0, 8).toUpperCase() : '000000');
     const dateJour = formaterDateFr(new Date().toISOString().split('T')[0]);
 
-    // Remplissage ticket visuel
+    // Remplissage facture officielle
     const elTicketRef = document.getElementById('recuNumeroTicket');
+    const elBadgePaiement = document.getElementById('recuStatutPaiementBadge');
     const elAtelierNom = document.getElementById('recuNomAtelier');
     const elAtelierContact = document.getElementById('recuAtelierContact');
     const elDateEmission = document.getElementById('recuDateEmission');
@@ -1754,10 +2503,23 @@ const App = {
     const elResteDu = document.getElementById('recuResteDu');
     const btnWA = document.getElementById('btnPartagerRecuWA');
 
-    if (elTicketRef) elTicketRef.textContent = `REÇU N° ${codeTicket}`;
+    if (elTicketRef) elTicketRef.textContent = `N° ${codeTicket}`;
+    if (elBadgePaiement) {
+      elBadgePaiement.classList.remove('is-paid', 'is-partial', 'is-unpaid');
+      if (reste <= 0) {
+        elBadgePaiement.textContent = 'SOLDÉ';
+        elBadgePaiement.classList.add('is-paid');
+      } else if (paye > 0) {
+        elBadgePaiement.textContent = 'ACOMPTE REÇU';
+        elBadgePaiement.classList.add('is-partial');
+      } else {
+        elBadgePaiement.textContent = 'À RÉGLER';
+        elBadgePaiement.classList.add('is-unpaid');
+      }
+    }
     if (elAtelierNom) elAtelierNom.textContent = atelierNom;
     if (elAtelierContact) elAtelierContact.textContent = `${atelierContact}${atelierVille}`;
-    if (elDateEmission) elDateEmission.textContent = `Date : ${dateJour}`;
+    if (elDateEmission) elDateEmission.textContent = `Émise le : ${dateJour}`;
     if (elNomClient) elNomClient.textContent = client ? client.nom : 'Client inconnu';
     if (elTelClient) elTelClient.textContent = client?.telephone || 'Non renseigné';
     if (elVetement) elVetement.textContent = cmd.vetement;
@@ -1776,28 +2538,29 @@ const App = {
       }
     }
 
-    // Préparation texte WhatsApp soigné et élégant
-    const soldeLigne = reste > 0 
+    // Préparation texte WhatsApp professionnel avec signature Tailleur Pro
+    const soldeLigne = reste > 0
       ? `⚠️ *Reste à régler :* ${formaterFCFA(reste)}`
-      : `🎉 *Statut paiement :* Entièrement soldé (0 FCFA)`;
+      : `✅ *Statut paiement :* Entièrement soldé (0 FCFA)`;
 
-    this.texteDernierRecu = 
-`🧾 *REÇU OFFICIEL DE CONFECTION*
+    this.texteDernierRecu =
+`🧾 *FACTURE OFFICIELLE DE CONFECTION*
 🏢 *${atelierNom.toUpperCase()}*${atelierVille ? ` (${profil.ville})` : ''}
-${profil?.telephone ? `📞 ${profil.telephone}\n` : ''}----------------------------------------
-📅 *Date :* ${dateJour}
-🔢 *N° Reçu :* ${codeTicket}
+${profil?.telephone ? `📞 ${profil.telephone}\n` : ''}────────────────────────
+📅 *Émise le :* ${dateJour}
+🔢 *Référence :* ${codeTicket}
 
 👤 *Client :* ${client ? client.nom : 'Cher client'}
 👗 *Modèle :* ${cmd.vetement}
-🧵 *Tissu :* ${cmd.tissu || 'Fourni'}
+🧵 *Tissu :* ${cmd.tissu || 'Fourni par le client'}
 🗓️ *Livraison promise :* ${formaterDateFr(cmd.date_livraison)}
-----------------------------------------
-💰 *Prix total :* ${formaterFCFA(cmd.prix_total)}
-💵 *Avance / Versements reçus :* ${formaterFCFA(paye)}
+────────────────────────
+💰 *Montant total :* ${formaterFCFA(cmd.prix_total)}
+💵 *Acompte versé :* ${formaterFCFA(paye)}
 ${soldeLigne}
-----------------------------------------
-✨ *Merci de votre confiance ! Confection sur-mesure garantie.*`;
+────────────────────────
+✨ _Merci de votre confiance ! Confection sur-mesure garantie._
+✂️ _Facture générée avec *Tailleur Pro* — l'application des ateliers de couture_`;
 
     if (btnWA) {
       if (client?.telephone) {

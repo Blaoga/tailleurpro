@@ -33,9 +33,14 @@
       <!-- 1. Choix du Pays -->
       <div class="form-group">
         <label for="paysSelect" class="form-label">Pays</label>
-        <select id="paysSelect" class="form-select" aria-label="Sélectionnez votre pays">
-          <!-- Rempli dynamiquement depuis pays.js -->
-        </select>
+        <div class="country-select-wrap">
+          <select id="paysSelect" class="form-select" data-pays-format="complet" aria-label="Sélectionnez votre pays">
+            <!-- Rempli dynamiquement depuis pays.js -->
+          </select>
+          <span class="select-chevron-indicator" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
       </div>
 
       <!-- 2. Numéro de téléphone -->
@@ -79,6 +84,7 @@
   <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
   <script src="js/pays.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
   <script>
@@ -96,21 +102,26 @@
       const btnText = document.getElementById('btnText');
       const alertBox = document.getElementById('authAlert');
 
-      // 2. Remplir pays
-      paysSelect.innerHTML = Object.values(PAYS).map(p => 
-        `<option value="${p.code}">${p.drapeau} ${p.nom} (+${p.indicatif})</option>`
-      ).join('');
-
+      // 2. Remplir les 15 pays
       const paysActif = obtenirPaysActif();
-      paysSelect.value = paysActif.code;
+      remplirSelectPays(paysSelect, 'complet', paysActif.code);
+      if (window.Lang) Lang.init();
 
       function actualiserAffichagePays() {
         const p = PAYS[paysSelect.value] || PAYS_PAR_DEFAUT;
+        memoriserPaysActif(p.code);
         prefixDisplay.innerHTML = `<span class="flag">${p.drapeau}</span><span class="code">+${p.indicatif}</span>`;
         telInput.placeholder = p.exemple;
       }
 
       paysSelect.addEventListener('change', actualiserAffichagePays);
+      telInput.addEventListener('input', () => {
+        const detecte = detecterPaysDepuisNumero(telInput.value);
+        if (detecte && detecte.code !== paysSelect.value) {
+          paysSelect.value = detecte.code;
+          actualiserAffichagePays();
+        }
+      });
       actualiserAffichagePays();
 
       // 3. Toggle mot de passe

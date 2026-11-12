@@ -514,6 +514,7 @@
   <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
   <script src="js/pays.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/saspay.js"></script>
@@ -547,8 +548,10 @@
       _sessionCourante = session;
 
       const planChoisi = plan === 'atelier' ? 'atelier' : 'solo';
-      const codePays = (session.user.user_metadata?.pays || 'CM').toUpperCase();
-      const phoneMeta = (session.user.user_metadata?.telephone || '').trim();
+      const paysBrut = (session.user.user_metadata?.pays || (window.obtenirPaysActif ? obtenirPaysActif().code : 'CM')).toUpperCase();
+      const codePays = (window.PAYS && window.PAYS[paysBrut]) ? paysBrut : 'CM';
+      const phoneBrut = (session.user.user_metadata?.telephone || '').replace(/\s+/g, '').trim();
+      const phoneMeta = /^\+\d{7,15}$/.test(phoneBrut) ? phoneBrut : '';
 
       const btnSolo = document.getElementById('btnPayerSolo');
       const btnAtelier = document.getElementById('btnPayerAtelier');
@@ -557,7 +560,7 @@
       _paiementEnCours = true;
       if (btnSolo) btnSolo.disabled = true;
       if (btnAtelier) btnAtelier.disabled = true;
-      if (triggerBtn) triggerBtn.textContent = 'Connexion à SasPay...';
+      if (triggerBtn) triggerBtn.textContent = (window.Lang ? Lang.t('Connexion à SasPay...', 'Connecting to SasPay...') : 'Connexion à SasPay...');
 
       try {
         const res = await SasPayClient.initierPaiement({
@@ -597,6 +600,7 @@
     appliquerPlanInitial();
 
     document.addEventListener('DOMContentLoaded', async () => {
+      if (window.Lang) Lang.init();
       const urlParams = new URLSearchParams(window.location.search);
       const session = await Auth.protegerRoute();
       if (!session) return;
@@ -604,8 +608,8 @@
 
       const alertBox = document.getElementById('demandeAlert');
 
-      // Gestion du retour depuis une session de checkout SasPay (?retour_saspay=1)
-      if (urlParams.get('retour_saspay')) {
+      // Gestion du retour depuis une session de checkout SasPay (?retour_saspay=1 ou ?statut=retour)
+      if (urlParams.get('retour_saspay') || urlParams.get('statut') === 'retour') {
         const sessionIdParam = urlParams.get('session_id') || sessionStorage.getItem('saspay_active_session_id');
         const txnIdParam = urlParams.get('transaction_id') || sessionStorage.getItem('saspay_active_transaction_id');
 

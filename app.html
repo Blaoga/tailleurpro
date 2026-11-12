@@ -8,6 +8,10 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/auth.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { background-color: #080D29 !important; color: #FFFFFF !important; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  </style>
 </head>
 <body class="app-body">
 
@@ -32,6 +36,13 @@
       </div>
 
       <div class="header-action-group">
+        <!-- Sélecteur de langue FR | EN -->
+        <button type="button" class="lang-toggle-btn lang-toggle-btn--app" id="btnLangToggleApp" onclick="if(window.Lang)Lang.toggle()" aria-label="Changer la langue">
+          <span data-lang-choice="fr" class="active">FR</span>
+          <span class="lang-sep">|</span>
+          <span data-lang-choice="en">EN</span>
+        </button>
+
         <!-- Cloche de notifications (Ouvre le centre de notifications) -->
         <button type="button" class="header-icon-pill" id="notifBellBtn" aria-label="Notifications" aria-haspopup="dialog" aria-controls="modalNotifications" title="Centre de notifications" onclick="App.ouvrirNotifications()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -465,6 +476,17 @@
               <input type="text" id="reglageVille" class="form-input modal-dark-input" placeholder="Ex: Dakar, Douala, Abidjan...">
             </div>
             <div class="form-group">
+              <label class="form-label modal-field-label" for="reglagePays">Pays / Indicatif par défaut</label>
+              <div class="country-select-wrap">
+                <select id="reglagePays" class="form-select modal-dark-input" data-pays-format="complet" aria-label="Pays par défaut">
+                  <!-- Rempli dynamiquement (15 pays) -->
+                </select>
+                <span class="select-chevron-indicator" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </div>
+            </div>
+            <div class="form-group">
               <label class="form-label modal-field-label" for="reglageEmailRecup">E-mail de récupération (facultatif)</label>
               <input type="email" id="reglageEmailRecup" class="form-input modal-dark-input" placeholder="exemple@domaine.com">
             </div>
@@ -706,8 +728,18 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label modal-field-label" for="clientTelInput">Téléphone / WhatsApp</label>
-          <input type="tel" id="clientTelInput" class="form-input modal-dark-input" placeholder="Ex: 77 123 45 67">
+          <label class="form-label modal-field-label" for="clientTelInput">Numéro WhatsApp / Téléphone</label>
+          <div class="client-phone-group">
+            <div class="country-select-wrap client-country-wrap">
+              <select id="clientPaysTelSelect" class="form-select modal-dark-input client-country-select" data-pays-format="compact" aria-label="Indicatif pays du client">
+                <!-- Rempli dynamiquement (15 pays) -->
+              </select>
+              <span class="select-chevron-indicator" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </span>
+            </div>
+            <input type="tel" id="clientTelInput" class="form-input modal-dark-input client-tel-field" placeholder="Ex: 6 70 12 34 56" inputmode="tel">
+          </div>
         </div>
 
         <!-- Mesures libres & personnalisables (aucune mesure automatique imposée) -->
@@ -1338,6 +1370,7 @@
   <script src="js/env.local.js"></script>
   <script src="js/config.js"></script>
   <script src="js/pays.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/store.js"></script>
