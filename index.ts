@@ -1,213 +1,270 @@
 // ============================================================================
-// TAILLEUR PRO — EDGE FUNCTION : INITIALISATION SÉCURISÉE D'UN PAIEMENT SASPAY
+// TAILLEUR PRO — EDGE FUNCTION : TRAITEMENT SÉCURISÉ DES WEBHOOKS SASPAY
 // ============================================================================
-// Endpoint : POST /functions/v1/saspay-initiate
+// Endpoint : POST /functions/v1/saspay-webhook
 // ============================================================================
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
-  PLANS,
-  obtenirDevisePays,
-  initierPaiementSoftpay,
-  creerSessionCheckout,
+  verifierSignatureWebhook,
+  verifierPaiementSaspay,
 } from "../_shared/saspay.ts";
 
 serve(async (req: Request) => {
-  // 1. Gestion des requêtes CORS prévol (OPTIONS)
+  // 1. Prévol CORS
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response("Méthode non autorisée", { status: 405 });
   }
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const saspayApiKey = Deno.env.get("SASPAY_API_KEY") ?? "";
-    const appUrl = Deno.env.get("APP_URL") ?? "https://tailleurpro.app";
+    const saspayWebhookSecret = Deno.env.get("SASPAY_WEBHOOK_SECRET") ?? "";
 
-    if (!saspayApiKey) {
-      throw new Error("La variable d'environnement SASPAY_API_KEY est manquante.");
+    if (!saspayWebhookSecret) {
+      console.error("[SasPay Webhook] Secret de signature manquant dans les variables d'environnement.");
+      return new Response(JSON.stringify({ error: "Configuration serveur incomplète" }), { status: 500 });
     }
 
-    // 2. Authentification obligatoire de l'utilisateur par JWT Supabase
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    // 2. Extraction des en-têtes officiels SasPay
+    const signatureHeader = req.headers.get("x-webhook-signature");
+    const timestampHeader = req.headers.get("x-webhook-timestamp");
+    const eventHeader = req.headers.get("x-webhook-event");
+
+    // 3. Récupération du corps BRUT (Strictement nécessaire pour le calcul HMAC)
+    const rawBody = await req.text();
+
+    // 4. Vérification cryptographique HMAC SHA-256 et contrôle de l'horodatage (< 300s)
+    const verification = await verifierSignatureWebhook(
+      rawBody,
+      signatureHeader,
+      timestampHeader,
+      saspayWebhookSecret
+    );
+
+    if (!verification.valide) {
+      console.warn(`[SasPay Webhook] Rejet sécurité : ${verification.raison}`);
       return new Response(
-        JSON.stringify({ success: false, error: "En-tête Authorization manquant." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: verification.raison }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const payload = JSON.parse(rawBody);
+    const eventType = payload.event || eventHeader;
+    const eventData = payload.data || {};
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-    const token = authHeader.replace("Bearer ", "").trim();
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Session invalide ou expirée." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // 5. Protection contre les doubles traitements (Déduplication)
+    // Calcul de l'empreinte unique de livraison
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest(
+      "SHA-256",
+      encoder.encode(`${timestampHeader}:${signatureHeader}`)
+    );
+    const deliveryKey = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
 
-    // 3. Lecture et validation stricte du payload
-    const body = await req.json().catch(() => ({}));
-    const planKey = body.plan === "atelier" ? "atelier" : "solo";
-    const selectedPlan = PLANS[planKey];
-    const mode = body.mode === "checkout" ? "checkout" : "softpay";
-    const countryRaw = (body.country || user.user_metadata?.pays || "CM").toUpperCase();
-    const country = /^[A-Z]{2}$/.test(countryRaw) ? countryRaw : "CM";
-    const rawCurrency = country === "XX" ? "USD" : obtenirDevisePays(country);
-    const currency = (rawCurrency === "XAF" || rawCurrency === "XOF" || rawCurrency === "USD") ? rawCurrency : "XAF";
-    const network = body.network || (country === "CM" ? "mtn_cm" : "orange_ci");
-    const phone = String(body.phone || user.user_metadata?.telephone || "").replace(/\s+/g, "").trim();
-
-    const estUrlPubliqueValide = (val: string) => {
-      try {
-        const parsed = new URL(val);
-        const isLocal = /^(localhost|127\.0\.0\.1)$/i.test(parsed.hostname);
-        return (parsed.protocol === "https:" || parsed.protocol === "http:") && !isLocal;
-      } catch {
-        return false;
-      }
-    };
-    const fallbackReturnUrl = estUrlPubliqueValide(appUrl)
-      ? `${appUrl.replace(/\/+$/, "")}/abonnement.html?retour_saspay=1`
-      : "https://tailleurpro.app/abonnement.html?retour_saspay=1";
-    const returnUrl = (typeof body.return_url === "string" && estUrlPubliqueValide(body.return_url))
-      ? body.return_url
-      : fallbackReturnUrl;
-
-    // 4. Génération de la clé d'idempotence unique (UUID v4)
-    const idempotencyKey = crypto.randomUUID();
-
-    // 5. Enregistrement préalable de l'intention de transaction en base (Statut PENDING)
-    const { data: localRecord, error: insertError } = await supabaseAdmin
-      .from("abonnements_paiements")
+    const { error: deduplicationError } = await supabaseAdmin
+      .from("saspay_webhook_events")
       .insert({
-        user_id: user.id,
-        plan: selectedPlan.planId,
-        duree_jours: selectedPlan.dureeJours,
-        amount: selectedPlan.amount,
-        currency: currency,
-        country: country,
-        network: mode === "softpay" ? network : null,
-        customer_phone: phone,
-        status: "PENDING",
-        idempotency_key: idempotencyKey,
-      })
-      .select("id")
-      .single();
-
-    if (insertError) {
-      throw new Error(`Erreur enregistrement transaction locale : ${insertError.message}`);
-    }
-
-    // Décomposition nom / prénom client pour SasPay
-    const fullName = (user.user_metadata?.prenom || "Artisan").trim();
-    const nameParts = fullName.split(" ");
-    const firstName = nameParts[0] || "Artisan";
-    const lastName = nameParts.slice(1).join(" ") || "Tailleur";
-    const email = user.email || `tailleur_${user.id.substring(0, 8)}@tailleurpro.app`;
-
-    const metadata = {
-      user_id: user.id,
-      local_id: localRecord.id,
-      plan: selectedPlan.planId,
-      app: "tailleur_pro",
-    };
-
-    // 6. Appel de l'API SasPay selon le mode sélectionné
-    if (mode === "checkout") {
-      // --- FLUX CHECKOUT HÉBERGÉ ---
-      const sessionResult = await creerSessionCheckout(saspayApiKey, {
-        amount: selectedPlan.amount,
-        currency: currency,
-        customer_email: email,
-        customer_name: fullName || "Artisan Tailleur",
-        customer_phone: phone || undefined,
-        country: country !== "XX" ? country : undefined,
-        description: `${selectedPlan.label} - Tailleur Pro`,
-        return_url: returnUrl,
-        metadata: metadata,
+        delivery_key: deliveryKey,
+        event_type: eventType,
+        saspay_transaction_id: eventData.id || null,
+        payload: payload,
       });
 
-      const sessionId = sessionResult.id;
-      const checkoutUrl = sessionResult.checkout_url;
-
-      // Mise à jour de la transaction locale avec l'ID de session SasPay
-      await supabaseAdmin
-        .from("abonnements_paiements")
-        .update({
-          saspay_session_id: sessionId,
-          checkout_url: checkoutUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", localRecord.id);
-
+    if (deduplicationError && deduplicationError.code === "23505") {
+      // 23505 = Contrainte de clé primaire violée (événement déjà reçu et traité)
+      console.info(`[SasPay Webhook] Événement déjà traité (${deliveryKey}). Accusé de réception renvoyé.`);
       return new Response(
-        JSON.stringify({
-          success: true,
-          mode: "checkout",
-          session_id: sessionId,
-          checkout_url: checkoutUrl,
-          status: "PENDING",
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    } else {
-      // --- FLUX SOFTPAY DIRECT (Push USSD ou redirection spécifique) ---
-      const softpayResult = await initierPaiementSoftpay(saspayApiKey, idempotencyKey, {
-        amount: selectedPlan.amount,
-        currency: currency,
-        country: country,
-        network: network,
-        description: `${selectedPlan.label} - Tailleur Pro`,
-        customer: {
-          email: email,
-          first_name: firstName,
-          last_name: lastName,
-          phone: phone,
-        },
-        metadata: metadata,
-      });
-
-      const transactionId = softpayResult.id;
-      const checkoutUrl = softpayResult.checkout_url || "";
-      const status = softpayResult.status || "PENDING";
-
-      // Mise à jour de la transaction locale avec le transaction_id SasPay
-      await supabaseAdmin
-        .from("abonnements_paiements")
-        .update({
-          saspay_transaction_id: transactionId,
-          checkout_url: checkoutUrl || null,
-          status: status,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", localRecord.id);
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          mode: "softpay",
-          transaction_id: transactionId,
-          status: status,
-          checkout_url: checkoutUrl,
-          requires_redirect: !!checkoutUrl,
-        }),
+        JSON.stringify({ success: true, message: "Événement déjà traité précédemment." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-  } catch (err: any) {
-    let parsed = { message: err.message || "Erreur interne", code: "internal_error" };
-    try {
-      parsed = JSON.parse(err.message);
-    } catch {}
+
+    // 6. Traitement des événements métier
+    if (eventType === "transaction.success") {
+      const transactionId = eventData.id;
+
+      if (!transactionId) {
+        throw new Error("Identifiant de transaction manquant dans le payload de webhook.");
+      }
+
+      // Règle d'or SasPay : Vérification active auprès de l'API (Seul SUCCESS autorise l'activation)
+      // Ne jamais enregistrer un identifiant de transaction provenant uniquement d'un webhook non vérifié.
+      const verifiedTransaction = await verifierPaiementSaspay(saspayApiKey, transactionId);
+
+      if (verifiedTransaction.status !== "SUCCESS") {
+        console.warn(`[SasPay Webhook] Transaction ${transactionId} en statut ${verifiedTransaction.status} lors de la vérification.`);
+        return new Response(
+          JSON.stringify({ success: false, message: "Paiement non confirmé auprès de la passerelle." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Récupération de l'enregistrement local associé :
+      // 1. D'abord par saspay_transaction_id (cas Softpay ou transaction déjà liée)
+      let { data: localRecord } = await supabaseAdmin
+        .from("abonnements_paiements")
+        .select("*")
+        .eq("saspay_transaction_id", transactionId)
+        .maybeSingle();
+
+      // 2. Si non trouvé, recherche par metadata.local_id (cas Checkout hébergé)
+      const localId = verifiedTransaction.metadata?.local_id;
+      if (!localRecord && localId) {
+        const { data: byLocalId } = await supabaseAdmin
+          .from("abonnements_paiements")
+          .select("*")
+          .eq("id", localId)
+          .maybeSingle();
+        localRecord = byLocalId;
+      }
+
+      if (!localRecord) {
+        throw new Error(`Transaction locale introuvable pour la transaction SasPay ${transactionId}.`);
+      }
+
+      // Contrôle de l'utilisateur : le paiement doit appartenir à l'utilisateur de la transaction locale
+      const targetUserId = verifiedTransaction.metadata?.user_id || localRecord.user_id;
+      if (localRecord.user_id !== targetUserId) {
+        console.error(`[SasPay Webhook] ALERTE SÉCURITÉ : Discordance utilisateur. Local: ${localRecord.user_id}, Reçu: ${targetUserId}`);
+        return new Response(
+          JSON.stringify({ success: false, error: "Discordance entre l'utilisateur payeur et la session locale." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Contrôle de conformité du montant
+      const requestedAmount = verifiedTransaction.requested_amount || verifiedTransaction.amount;
+      if (requestedAmount !== "2600.00" && requestedAmount !== "5100.00") {
+        console.error(`[SasPay Webhook] ALERTE MONTANT FRAUDULEUX : ${requestedAmount} reçu au lieu de 2600.00 ou 5100.00`);
+        return new Response(
+          JSON.stringify({ success: false, error: "Montant incompatible avec les forfaits officiels." }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (localRecord.amount !== requestedAmount) {
+        console.error(`[SasPay Webhook] ALERTE MONTANT DIVERGENT : Enregistré ${localRecord.amount}, Reçu ${requestedAmount}`);
+        return new Response(
+          JSON.stringify({ success: false, error: "Le montant payé ne correspond pas au montant de la transaction locale." }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Contrôle de la devise
+      if (localRecord.currency && verifiedTransaction.currency && localRecord.currency !== verifiedTransaction.currency) {
+        console.error(`[SasPay Webhook] ALERTE DEVISE : Enregistrée ${localRecord.currency}, Reçue ${verifiedTransaction.currency}`);
+        return new Response(
+          JSON.stringify({ success: false, error: "Devise incompatible avec la transaction locale." }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Vérification du statut déjà actif (Idempotence)
+      if (localRecord.status === "SUCCESS" && localRecord.active_le) {
+        console.info(`[SasPay Webhook] Transaction locale ${localRecord.id} déjà active. Traitement idempotent.`);
+        return new Response(
+          JSON.stringify({ success: true, message: "Abonnement déjà activé.", activated: true, transaction_id: transactionId }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Enregistrement sécurisé de saspay_transaction_id vérifié sur la transaction locale
+      if (localRecord.saspay_transaction_id !== transactionId) {
+        const { error: linkError } = await supabaseAdmin
+          .from("abonnements_paiements")
+          .update({
+            saspay_transaction_id: transactionId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", localRecord.id);
+
+        if (linkError) {
+          console.warn(`[SasPay Webhook] Note mise à jour saspay_transaction_id : ${linkError.message}`);
+        }
+      }
+
+      // Appel de la fonction SQL atomique et idempotente d'activation
+      const { data: activationResult, error: activationError } = await supabaseAdmin.rpc(
+        "activer_abonnement_saspay",
+        {
+          p_transaction_id: transactionId,
+          p_user_id: targetUserId,
+          p_duree_jours: localRecord.duree_jours || 30,
+          p_net_amount: verifiedTransaction.net_amount || null,
+          p_charged_amount: verifiedTransaction.debited_amount || verifiedTransaction.charged || null,
+          p_fee_amount: verifiedTransaction.client_fee || verifiedTransaction.fee || null,
+          p_reference: verifiedTransaction.reference || null,
+          p_raw_payload: verifiedTransaction,
+        }
+      );
+
+      if (activationError) {
+        throw new Error(`Erreur lors de l'activation en base : ${activationError.message}`);
+      }
+
+      console.info(`[SasPay Webhook] Abonnement activé avec succès pour le tailleur ${targetUserId}.`);
+      return new Response(
+        JSON.stringify({ success: true, activated: true, transaction_id: transactionId }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } else if (eventType === "transaction.failed") {
+      const transactionId = eventData.id;
+      if (transactionId) {
+        const { data: updated } = await supabaseAdmin
+          .from("abonnements_paiements")
+          .update({
+            status: "FAILED",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("saspay_transaction_id", transactionId)
+          .select("id");
+
+        if ((!updated || updated.length === 0) && eventData.metadata?.local_id) {
+          await supabaseAdmin
+            .from("abonnements_paiements")
+            .update({
+              status: "FAILED",
+              saspay_transaction_id: transactionId,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", eventData.metadata.local_id);
+        }
+      }
+      return new Response(
+        JSON.stringify({ success: true, message: "Échec journalisé." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } else if (eventType === "webhook.test") {
+      // Événement de test manuel depuis le tableau de bord SasPay
+      console.info("[SasPay Webhook] Événement de test webhook.test validé avec succès.");
+      return new Response(
+        JSON.stringify({ success: true, message: "Webhook de test validé avec succès." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
-      JSON.stringify({ success: false, error: parsed.message || err.message, code: parsed.code }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ success: true, message: `Événement ${eventType} ignoré.` }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err: any) {
+    console.error("[SasPay Webhook] Erreur traitement :", err);
+    return new Response(
+      JSON.stringify({ success: false, error: err.message || "Erreur interne webhook" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
