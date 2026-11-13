@@ -25,6 +25,8 @@
     'Clients, commandes, mesures et paiements. Gérez tout simplement avec Tailleur Pro.': 'Clients, orders, measurements and payments. Manage everything effortlessly with Tailleur Pro.',
     'Découvrir': 'Explore',
     '15 jours offerts · Sans carte bancaire': '15 days free · No bank card required',
+    'Recommandé par plus de 5 000 tailleurs et ateliers': 'Trusted by over 5,000 tailors & workshops',
+    'tailleurs et ateliers en Afrique': 'tailors & workshops in Africa',
 
     // Landing Aperçu / Features
     'Aperçu': 'Preview',
